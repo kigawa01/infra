@@ -1,0 +1,57 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pve-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pve-exporter
+  template:
+    metadata:
+      labels:
+        app: pve-exporter
+    spec:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchExpressions:
+              - key: ha
+                operator: NotIn
+                values:
+                  - ignore
+      containers:
+        - name: pve-exporter
+          image: prompve/prometheus-pve-exporter
+          resources:
+            limits:
+              memory: 64Mi
+          ports:
+            - containerPort: 9221
+          env:
+            - name: PVE_PASSWORD
+              value: "dfjkghow7oz8syrgWTVSPUjgUSGHkjsflmjySGELG9SLdh8KJSDgh"
+            - name: PVE_USER
+              value: "prometheus@pve"
+            - name: PVE_VERIFY_SSL
+              value: "false"
+
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pve-exporter
+spec:
+  selector:
+    app: pve-exporter
+  ports:
+    - protocol: TCP
+      port: 9221
+      targetPort: 9221
+      name: "pve-exporter"
+  type: ClusterIP

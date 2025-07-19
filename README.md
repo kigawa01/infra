@@ -68,6 +68,12 @@ infra/
 ├── generated/            # 生成されたスクリプト（実行時に作成）
 │   ├── install_node_exporter.sh      # 生成されたNode Exporterインストールスクリプト
 │   └── deploy_to_remote.sh           # 生成されたリモートデプロイスクリプト
+├── kubernetes/           # Kubernetes関連ファイル
+│   └── manifests/        # Kubernetesマニフェスト
+│       ├── ingress.yml   # Prometheus Grafana用のIngressマニフェスト
+│       ├── nginx-exporter.yml # Nginx Exporter用のDeploymentマニフェスト（コメントアウト済み）
+│       ├── prometheus.yml # Prometheus用のArgo CD Applicationマニフェスト
+│       └── pve-exporter.yml # Proxmox VE Exporter用のDeploymentとServiceマニフェスト
 └── environments/         # 環境固有の設定を含む
     ├── dev/              # 開発環境
     ├── staging/          # ステージング環境
@@ -164,6 +170,106 @@ ssh_key_path = "~/.ssh/dev-key/infra_dev_key"  # SSHキーのパスを指定（g
 ssh_password = ""  # SSHキーを使用する場合は空のままにします
 sudo_password = ""  # sudoパスワードが必要な場合に設定します
 ```
+
+## Kubernetesマニフェスト
+
+このインフラストラクチャには、Terraformを使用してKubernetesクラスターに適用できるマニフェストが含まれています。
+
+### Kubernetesマニフェストの概要
+
+`kubernetes/manifests/` ディレクトリには以下のKubernetesマニフェストが含まれています：
+
+- `ingress.yml` - Prometheus Grafanaにアクセスするための Kubernetes Ingress リソース
+- `nginx-exporter.yml` - Nginx メトリクスを収集するための Deployment リソース（現在はコメントアウトされています）
+- `prometheus.yml` - Prometheus スタックをデプロイするための Argo CD Application リソース
+- `pve-exporter.yml` - Proxmox VE メトリクスを収集するための Deployment と Service リソース
+
+### Kubernetesマニフェストの適用方法
+
+このインフラストラクチャでは、Kubernetesマニフェストを適用するための2つの方法をサポートしています：
+
+1. **Kubernetes Provider方式**: Terraformの Kubernetes プロバイダーを使用して直接適用
+2. **SSH+kubectl方式**: 指定されたホスト（デフォルト: 192.168.1.50）にSSH接続し、kubectlコマンドを使用して適用
+
+デフォルトでは、**SSH+kubectl方式**が使用されます。
+
+### Kubernetes設定オプション
+
+Kubernetesマニフェストの適用は以下の変数で制御できます：
+
+#### 共通設定
+
+- `apply_k8s_manifests` - Kubernetesマニフェストを適用するかどうか（デフォルト: true）
+- `apply_nginx_exporter` - nginx-exporterマニフェストを適用するかどうか（デフォルト: false、コメントアウトされているため）
+
+#### 適用方法の選択
+
+- `use_ssh_kubectl` - SSH+kubectl方式を使用するかどうか（デフォルト: true）。falseの場合はKubernetes Provider方式が使用されます
+
+#### Kubernetes Provider方式の設定（use_ssh_kubectl = false の場合）
+
+- `kubernetes_config_path` - Kubernetesの設定ファイルへのパス（デフォルト: "~/.kube/config"）
+- `kubernetes_config_context` - 使用するKubernetes設定コンテキスト（デフォルト: ""、現在のコンテキストを使用）
+
+#### SSH+kubectl方式の設定（use_ssh_kubectl = true の場合）
+
+- `target_host` - SSH接続先のホストIPアドレス（デフォルト: "192.168.1.50"）
+- `ssh_user` - SSH接続用のユーザー名（デフォルト: "kigawa"）
+- `ssh_key_path` - SSH秘密鍵へのパス（デフォルト: ""）
+- `ssh_password` - SSHパスワード（SSH鍵が利用できない場合）（デフォルト: ""）
+- `remote_manifests_dir` - リモートホスト上でマニフェストをコピーするディレクトリ（デフォルト: "/tmp/k8s-manifests"）
+- `remote_kubectl_context` - リモートホスト上で使用するkubectlコンテキスト（デフォルト: ""、現在のコンテキストを使用）
+
+これらの変数は各環境の `terraform.tfvars` ファイルで設定できます：
+
+```hcl
+# Kubernetes configuration - SSH+kubectl方式（デフォルト）
+target_host = "192.168.1.50"
+ssh_user = "kigawa"
+ssh_key_path = "~/.ssh/main/infra_prod_key"
+use_ssh_kubectl = true
+apply_k8s_manifests = true
+apply_nginx_exporter = false
+
+# または、Kubernetes Provider方式
+use_ssh_kubectl = false
+kubernetes_config_path = "~/.kube/config"
+kubernetes_config_context = "my-cluster-context"
+apply_k8s_manifests = true
+```
+
+### Kubernetesマニフェストの適用
+
+Kubernetesマニフェストを適用するには、通常のTerraform操作を使用します：
+
+```bash
+# 開発環境でKubernetesマニフェストを適用する計画を作成
+./terraform.sh plan dev
+
+# 開発環境にKubernetesマニフェストを適用（SSH+kubectl方式）
+./terraform.sh apply dev
+
+# 本番環境にKubernetesマニフェストを適用（特定の変数を上書き）
+./terraform.sh apply prod -var="apply_nginx_exporter=true"
+
+# Kubernetes Provider方式を使用して適用
+./terraform.sh apply prod -var="use_ssh_kubectl=false"
+```
+
+### 注意事項
+
+- SSH+kubectl方式を使用する場合：
+  - リモートホスト（デフォルト: 192.168.1.50）にSSHでアクセスできる必要があります
+  - リモートホストにkubectlがインストールされている必要があります
+  - リモートホスト上のkubectlがKubernetesクラスターにアクセスできる必要があります
+
+- Kubernetes Provider方式を使用する場合：
+  - ローカルマシンからKubernetesクラスターにアクセスできる必要があります
+  - 指定されたkubeconfigファイルが有効である必要があります
+
+- 共通の注意事項：
+  - `nginx-exporter.yml` はデフォルトでコメントアウトされているため、適用するには `apply_nginx_exporter=true` を設定する必要があります
+  - Argo CDが設定されている場合、`prometheus.yml` のApplication リソースはArgo CDによって処理されます
 
 ## Terraform出力
 

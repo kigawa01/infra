@@ -66,3 +66,4 @@ id_rsa
 id_dsa
 *.ppk
 /environments/**/terraform.tfvars
+/legacy/

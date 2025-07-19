@@ -1,0 +1,41 @@
+#---
+#apiVersion: apps/v1
+#kind: Deployment
+#metadata:
+#  name: nginx-exporter
+#spec:
+#  replicas: 1
+#  selector:
+#    matchLabels:
+#      app: nginx-exporter
+#  template:
+#    metadata:
+#      labels:
+#        app: nginx-exporter
+#      annotations:
+#        prometheus.io/scrape: 'true'
+#        prometheus.io/port: '9113'
+#    spec:
+#      topologySpreadConstraints:
+#        - maxSkew: 1
+#          topologyKey: kubernetes.io/hostname
+#          whenUnsatisfiable: ScheduleAnyway
+#          labelSelector:
+#            matchExpressions:
+#              - key: ha
+#                operator: NotIn
+#                values:
+#                  - ignore
+#      containers:
+#        - name: nginx-exporter
+#          image: 'nginx/nginx-prometheus-exporter:0.10.0'
+#          args:
+#            - '-nginx.scrape-uri=http://192.168.1.103/stub_status'
+#          resources:
+#            limits:
+#              memory: 128Mi
+#              cpu: 500m
+#          ports:
+#            - containerPort: 9113
+#
+#

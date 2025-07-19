@@ -19,6 +19,12 @@ infra/
 ├── generated/                  # 生成されたスクリプト（実行時に作成）
 │   ├── install_node_exporter.sh      # 生成されたNode Exporterインストールスクリプト
 │   └── deploy_to_remote.sh     # 生成されたリモートデプロイスクリプト
+├── kubernetes/                 # Kubernetes関連ファイル
+│   └── manifests/              # Kubernetesマニフェスト
+│       ├── ingress.yml         # Prometheus Grafana用のIngressマニフェスト
+│       ├── nginx-exporter.yml  # Nginx Exporter用のDeploymentマニフェスト（コメントアウト済み）
+│       ├── prometheus.yml      # Prometheus用のArgo CD Applicationマニフェスト
+│       └── pve-exporter.yml    # Proxmox VE Exporter用のDeploymentとServiceマニフェスト
 └── environments/               # 環境固有の設定
     ├── dev/                    # 開発環境
     │   └── terraform.tfvars    # 開発環境の変数
@@ -32,8 +38,8 @@ infra/
 
 ### ルートレベルファイル
 
-- **main.tf**: 主要なインフラストラクチャリソースの定義
-- **variables.tf**: インフラストラクチャ全体で使用されるすべての入力変数を定義
+- **main.tf**: 主要なインフラストラクチャリソースの定義（Node Exporterのインストール、Kubernetesマニフェストの適用）
+- **variables.tf**: インフラストラクチャ全体で使用されるすべての入力変数を定義（SSH設定、Node Exporter設定、Kubernetes設定）
 - **outputs.tf**: 他の設定で使用したり、デプロイ後に表示できる出力値を定義
 - **.gitignore**: 機密ファイル（*.tfstate、*.tfvars（environments/*/terraform.tfvars を除く）、.terraform/、generated/、SSH鍵）をバージョン管理から除外
 
@@ -47,6 +53,18 @@ infra/
 実行時に生成されるファイル：
 - **install_node_exporter.sh**: テンプレートから生成されたNode Exporterインストールスクリプト
 - **deploy_to_remote.sh**: テンプレートから生成されたリモートデプロイスクリプト
+
+### Kubernetesマニフェスト
+
+`kubernetes/manifests/` ディレクトリには、Terraformを使用してKubernetesに適用されるマニフェストが含まれています：
+- **ingress.yml**: Prometheus Grafanaにアクセスするための Kubernetes Ingress リソース
+- **nginx-exporter.yml**: Nginx メトリクスを収集するための Deployment リソース（現在はコメントアウトされています）
+- **prometheus.yml**: Prometheus スタックをデプロイするための Argo CD Application リソース
+- **pve-exporter.yml**: Proxmox VE メトリクスを収集するための Deployment と Service リソース
+
+これらのマニフェストは、以下の2つの方法のいずれかで適用できます：
+1. **Kubernetes Provider方式**: Terraformの Kubernetes プロバイダーを使用して直接適用
+2. **SSH+kubectl方式**: 192.168.1.50などの指定されたホストにSSH接続し、kubectlコマンドを使用して適用
 
 ### 環境設定
 

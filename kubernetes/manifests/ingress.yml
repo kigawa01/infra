@@ -1,0 +1,19 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: prometheus-ingress
+  namespace: prometheus
+spec:
+  ingressClassName: haproxy
+  rules:
+    - host: prometheus.kigawa.net
+      http:
+        paths:
+          - backend:
+              service:
+                name: prometheus-helm-grafana
+                port:
+                  number: 80
+            path: /
+            pathType: Prefix
