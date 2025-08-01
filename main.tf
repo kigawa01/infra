@@ -18,8 +18,8 @@ terraform {
 
 # Configure the Kubernetes provider (used only if use_ssh_kubectl is false)
 provider "kubernetes" {
-  config_path    = var.kubernetes_config_path
-  config_context = var.kubernetes_config_context
+  config_path    = pathexpand(var.kubernetes_config_path)
+  config_context = var.kubernetes_config_context != "" ? var.kubernetes_config_context : null
 }
 
 # Create Node Exporter installation script
@@ -55,9 +55,9 @@ resource "null_resource" "test_ssh_connection" {
   
   connection {
     type        = "ssh"
-    host        = var.target_host
+    host        = var.target_host == "k8s4" ? "192.168.1.120" : var.target_host
     user        = var.ssh_user
-    private_key = var.ssh_key_path != "" ? file(var.ssh_key_path) : null
+    private_key = var.ssh_key_path != "" ? file(var.ssh_key_path) : file("/home/kigawa/.ssh/key/id_ed25519")
     password    = var.ssh_password != "" ? var.ssh_password : null
     timeout     = "30s"
     agent       = false
@@ -83,9 +83,9 @@ resource "null_resource" "install_node_exporter" {
   
   connection {
     type        = "ssh"
-    host        = var.target_host
+    host        = var.target_host == "k8s4" ? "192.168.1.120" : var.target_host
     user        = var.ssh_user
-    private_key = var.ssh_key_path != "" ? file(var.ssh_key_path) : null
+    private_key = var.ssh_key_path != "" ? file(var.ssh_key_path) : file("/home/kigawa/.ssh/key/id_ed25519")
     password    = var.ssh_password != "" ? var.ssh_password : null
     timeout     = "5m"
     agent       = false
@@ -124,18 +124,18 @@ locals {
   nginx_exporter_yaml = var.apply_k8s_manifests && var.apply_nginx_exporter ? file("${path.module}/kubernetes/manifests/nginx-exporter.yml") : ""
   
   # Parse the YAML files into Terraform-compatible format (only used if use_ssh_kubectl is false)
-  ingress_manifest = var.apply_k8s_manifests && !var.use_ssh_kubectl ? yamldecode(local.ingress_yaml) : {}
-  prometheus_manifest = var.apply_k8s_manifests && !var.use_ssh_kubectl ? yamldecode(local.prometheus_yaml) : {}
+  ingress_manifest = var.apply_k8s_manifests && !var.use_ssh_kubectl && local.ingress_yaml != "" ? yamldecode(local.ingress_yaml) : null
+  prometheus_manifest = var.apply_k8s_manifests && !var.use_ssh_kubectl && local.prometheus_yaml != "" ? yamldecode(local.prometheus_yaml) : null
   
   # The pve-exporter.yml file contains multiple manifests, so we need to split them
-  pve_exporter_manifests = var.apply_k8s_manifests && !var.use_ssh_kubectl ? [
+  pve_exporter_manifests = var.apply_k8s_manifests && !var.use_ssh_kubectl && local.pve_exporter_yaml != "" ? [
     for doc in split("---", local.pve_exporter_yaml) : 
     yamldecode(doc) if trimspace(doc) != ""
-  ] : []
+  ] : null
   
   # Only parse nginx-exporter.yml if apply_nginx_exporter is true
   # Note: This file is commented out, so it would need to be uncommented before use
-  nginx_exporter_manifest = var.apply_k8s_manifests && var.apply_nginx_exporter && !var.use_ssh_kubectl ? yamldecode(local.nginx_exporter_yaml) : {}
+  nginx_exporter_manifest = var.apply_k8s_manifests && var.apply_nginx_exporter && !var.use_ssh_kubectl && local.nginx_exporter_yaml != "" ? yamldecode(local.nginx_exporter_yaml) : null
   
   # List of manifest files to copy for SSH+kubectl method
   manifest_files = [
@@ -177,9 +177,9 @@ resource "null_resource" "test_k8s_ssh_connection" {
   
   connection {
     type        = "ssh"
-    host        = var.target_host
+    host        = var.target_host == "k8s4" ? "192.168.1.120" : var.target_host
     user        = var.ssh_user
-    private_key = var.ssh_key_path != "" ? file(var.ssh_key_path) : null
+    private_key = var.ssh_key_path != "" ? file(var.ssh_key_path) : file("/home/kigawa/.ssh/key/id_ed25519")
     password    = var.ssh_password != "" ? var.ssh_password : null
     timeout     = "30s"
     agent       = false
@@ -218,7 +218,7 @@ resource "null_resource" "apply_k8s_via_ssh" {
 
 # Apply the Ingress manifest using Kubernetes provider (if use_ssh_kubectl is false)
 resource "kubernetes_manifest" "prometheus_ingress" {
-  count = var.apply_k8s_manifests && !var.use_ssh_kubectl ? 1 : 0
+  count = var.apply_k8s_manifests && !var.use_ssh_kubectl && local.ingress_manifest != null ? 1 : 0
   
   manifest = local.ingress_manifest
   
@@ -230,7 +230,7 @@ resource "kubernetes_manifest" "prometheus_ingress" {
 
 # Apply the Prometheus manifest using Kubernetes provider (if use_ssh_kubectl is false)
 resource "kubernetes_manifest" "prometheus_application" {
-  count = var.apply_k8s_manifests && !var.use_ssh_kubectl ? 1 : 0
+  count = var.apply_k8s_manifests && !var.use_ssh_kubectl && local.prometheus_manifest != null ? 1 : 0
   
   manifest = local.prometheus_manifest
   
@@ -242,7 +242,7 @@ resource "kubernetes_manifest" "prometheus_application" {
 
 # Apply the PVE Exporter manifests using Kubernetes provider (if use_ssh_kubectl is false)
 resource "kubernetes_manifest" "pve_exporter" {
-  count = var.apply_k8s_manifests && !var.use_ssh_kubectl ? length(local.pve_exporter_manifests) : 0
+  count = var.apply_k8s_manifests && !var.use_ssh_kubectl && local.pve_exporter_manifests != null ? length(local.pve_exporter_manifests) : 0
   
   manifest = local.pve_exporter_manifests[count.index]
   
@@ -254,7 +254,7 @@ resource "kubernetes_manifest" "pve_exporter" {
 
 # Apply the Nginx Exporter manifest using Kubernetes provider (if use_ssh_kubectl is false and enabled)
 resource "kubernetes_manifest" "nginx_exporter" {
-  count = var.apply_k8s_manifests && var.apply_nginx_exporter && !var.use_ssh_kubectl ? 1 : 0
+  count = var.apply_k8s_manifests && var.apply_nginx_exporter && !var.use_ssh_kubectl && local.nginx_exporter_manifest != null ? 1 : 0
   
   manifest = local.nginx_exporter_manifest
   

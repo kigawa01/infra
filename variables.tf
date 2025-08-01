@@ -6,7 +6,7 @@ variable "environment" {
 variable "target_host" {
   description = "Target host IP address for Node Exporter installation and Kubernetes operations"
   type        = string
-  default     = "192.168.1.50"
+  default     = "k8s4"
 }
 
 variable "ssh_user" {
@@ -57,7 +57,7 @@ variable "node_exporter_port" {
 variable "kubernetes_config_path" {
   description = "Path to the Kubernetes config file"
   type        = string
-  default     = "~/.kube/config"
+  default     = "/home/kigawa/.kube/config"
 }
 
 variable "kubernetes_config_context" {
