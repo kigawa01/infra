@@ -288,32 +288,3 @@ host cross
 	user croover
 	port 22
 	Identityfile ~/.ssh/main/id_rsa
-
-# --- START CODER JETBRAINS coder.kigawa.net
-Host coder-jetbrains-coder.kigawa.net--*
-  ProxyCommand /home/kigawa/.local/share/coder-gateway/coder.kigawa.net/coder-linux-amd64 --global-config /home/kigawa/.local/share/coder-gateway/coder.kigawa.net/config --url https://coder.kigawa.net ssh --stdio --usage-app=jetbrains --ssh-host-prefix coder-jetbrains-coder.kigawa.net-- %h
-  ConnectTimeout 0
-  StrictHostKeyChecking no
-  UserKnownHostsFile /dev/null
-  LogLevel ERROR
-  SetEnv CODER_SSH_SESSION_TYPE=JetBrains
-
-Host coder-jetbrains-coder.kigawa.net-bg--*
-  ProxyCommand /home/kigawa/.local/share/coder-gateway/coder.kigawa.net/coder-linux-amd64 --global-config /home/kigawa/.local/share/coder-gateway/coder.kigawa.net/config --url https://coder.kigawa.net ssh --stdio --usage-app=disable --ssh-host-prefix coder-jetbrains-coder.kigawa.net-bg-- %h
-  ConnectTimeout 0
-  StrictHostKeyChecking no
-  UserKnownHostsFile /dev/null
-  LogLevel ERROR
-  SetEnv CODER_SSH_SESSION_TYPE=JetBrains
-# --- END CODER JETBRAINS coder.kigawa.net
-
-# --- START CODER JETBRAINS TOOLBOX coder.kigawa.net
-Host coder-jetbrains-toolbox-coder.kigawa.net--*
-  ProxyCommand /home/kigawa/.local/share/coder-toolbox/coder.kigawa.net/coder-linux-amd64 --global-config /home/kigawa/.local/share/coder-toolbox/coder.kigawa.net/config --url https://coder.kigawa.net ssh --stdio --network-info-dir /home/kigawa/.local/share/coder-toolbox/ssh-network-metrics --usage-app=jetbrains --ssh-host-prefix coder-jetbrains-toolbox-coder.kigawa.net-- %h
-  ConnectTimeout 0
-  StrictHostKeyChecking no
-  UserKnownHostsFile /dev/null
-  LogLevel ERROR
-  SetEnv CODER_SSH_SESSION_TYPE=JetBrains
-
-# --- END CODER JETBRAINS TOOLBOX coder.kigawa.net

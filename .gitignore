@@ -67,3 +67,4 @@ id_dsa
 *.ppk
 /environments/**/terraform.tfvars
 /legacy/
+/kubernetes/manifests/one/dev/harbor-account-secret.yml

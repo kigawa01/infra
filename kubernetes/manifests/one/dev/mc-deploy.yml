@@ -1,0 +1,67 @@
+
+---
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: dev-mc-deploy
+  namespace: one
+spec:
+  replicas: 1
+  serviceName: "dev-mc"
+  selector:
+    matchLabels:
+      app: dev-mc-deploy
+  template:
+    metadata:
+      labels:
+        app: dev-mc-deploy
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '9940'
+    spec:
+      priorityClassName: one-priority
+      imagePullSecrets:
+        - name: harbor-account
+      initContainers:
+        - image: kigawa01/fonsole:main
+          name: restore
+          resources:
+            limits:
+              memory: 768Mi
+          env:
+            - name: MONGO_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  key: user
+                  name: fonsole
+            - name: MONGO_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: pass
+                  name: fonsole
+            - name: PROJECT_NAME
+              value: "one-build"
+            - name: MAX_REQUEST
+              value: "1"
+            - name: MONGO_HOST
+              value: "mongo-svc.fonsole.svc.cluster.local"
+            - name: BACKUP_PATH
+              value: "/app"
+          args:
+            - restore
+        - image: ubuntu
+          name: setup
+      containers:
+        - name: dev-mc
+          # https://docker-minecraft-server.readthedocs.io/en/latest/
+          resources:
+            limits:
+              memory: 1Gi
+          image: itzg/minecraft-server
+          ports:
+            - containerPort: 25565
+          workingDir: /data
+          volumeMounts:
+            - name: mc
+              mountPath: /data

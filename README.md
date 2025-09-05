@@ -2,283 +2,141 @@
 
 このリポジトリは Terraform を使用したインフラストラクチャコードを含んでいます。
 
-## Terraform 実行スクリプト
+## 概要
 
-異なる環境でのTerraform操作を簡略化するため、bashスクリプト `terraform.sh` が提供されています。スクリプトはTerraformがインストールされていない場合、自動的にインストールを試みます。
+このプロジェクトは以下のコンポーネントを管理します：
 
-### 使用方法
+- **Prometheus Node Exporter**: システムメトリクス収集
+- **Kubernetesマニフェスト**: Prometheus エコシステムのデプロイ
+- **SSH経由の自動化**: リモートホストへの安全なデプロイ
+
+## クイックスタート
+
+```bash
+# 1. リポジトリをクローン
+git clone <repository-url>
+cd infra
+
+# 2. 開発環境を初期化
+./terraform.sh init dev
+
+# 3. 実行計画を確認
+./terraform.sh plan dev
+
+# 4. インフラをデプロイ
+./terraform.sh apply dev
+```
+
+## 主要機能
+
+### 🔧 Terraform実行スクリプト
+
+`terraform.sh` スクリプトが環境別のデプロイを簡素化：
 
 ```bash
 ./terraform.sh [コマンド] [環境] [オプション]
 ```
 
-### コマンド
+**利用可能なコマンド**: `init`, `plan`, `apply`, `destroy`, `validate`, `fmt`  
+**対応環境**: `dev`, `staging`, `prod`
 
-- `init` - Terraform作業ディレクトリを初期化
-- `plan` - 実行計画を作成
-- `apply` - 必要な変更を適用して目的の状態に到達
-- `destroy` - Terraformが管理するインフラストラクチャを削除
-- `validate` - 設定ファイルを検証
-- `fmt` - 設定ファイルを標準形式に再フォーマット
-- `help` - ヘルプメッセージを表示
+### 📊 Node Exporter
 
-### 環境
+Prometheus Node Exporterを自動インストール：
+- バージョン管理とポート設定
+- SSH経由での安全なデプロイ
+- systemdサービスとしての自動起動
 
-- `dev` - 開発環境
-- `staging` - ステージング環境
-- `prod` - 本番環境
+### ☸️ Kubernetesマニフェスト
 
-### オプション
-
-- `-auto-approve` - 対話的な承認をスキップ（apply/destroy時）
-- `-var-file` - 変数ファイルを指定
-
-### 例
-
-```bash
-# 開発環境を初期化
-./terraform.sh init dev
-
-# 本番環境の変更を計画
-./terraform.sh plan prod
-
-# ステージング環境に変更を適用
-./terraform.sh apply staging
-
-# 開発環境を自動承認で削除
-./terraform.sh destroy dev -auto-approve
-
-# カスタム変数ファイルで適用
-./terraform.sh apply prod -var-file=custom.tfvars
-```
+以下のリソースをデプロイ：
+- Prometheus Application（Argo CD）
+- PVE Exporter（Proxmox VEメトリクス）
+- Ingress（HTTPS アクセス）
+- Nginx Exporter（オプション）
 
 ## ディレクトリ構造
 
-リポジトリは以下の構造に従います：
-
 ```
 infra/
+├── README.md             # このファイル
 ├── main.tf               # メインTerraform設定
 ├── variables.tf          # 変数定義
 ├── outputs.tf            # 出力定義
 ├── terraform.sh          # Terraform実行スクリプト
+├── ssh_config            # SSH接続設定
+├── docs/                 # 詳細ドキュメント
+│   ├── terraform-usage.md    # Terraform使用方法
+│   ├── node-exporter.md      # Node Exporter設定
+│   ├── kubernetes.md         # Kubernetes設定
+│   └── ssh-configuration.md  # SSH設定
 ├── templates/            # テンプレートファイル
-│   ├── node_exporter_install.sh.tpl  # Node Exporterインストールスクリプトテンプレート
-│   └── deploy_remote.sh.tpl          # リモートデプロイスクリプトテンプレート
-├── generated/            # 生成されたスクリプト（実行時に作成）
-│   ├── install_node_exporter.sh      # 生成されたNode Exporterインストールスクリプト
-│   └── deploy_to_remote.sh           # 生成されたリモートデプロイスクリプト
+├── generated/            # 生成されたスクリプト（実行時作成）
 ├── kubernetes/           # Kubernetes関連ファイル
 │   └── manifests/        # Kubernetesマニフェスト
-│       ├── ingress.yml   # Prometheus Grafana用のIngressマニフェスト
-│       ├── nginx-exporter.yml # Nginx Exporter用のDeploymentマニフェスト（コメントアウト済み）
-│       ├── prometheus.yml # Prometheus用のArgo CD Applicationマニフェスト
-│       └── pve-exporter.yml # Proxmox VE Exporter用のDeploymentとServiceマニフェスト
-└── environments/         # 環境固有の設定を含む
+└── environments/         # 環境固有の設定
     ├── dev/              # 開発環境
     ├── staging/          # ステージング環境
     └── prod/             # 本番環境
 ```
 
-各環境ディレクトリには環境固有の変数ファイル（terraform.tfvars）が含まれています。
+## 詳細ドキュメント
 
-## Prometheus Node Exporter
+各コンポーネントの詳細な設定と使用方法については、以下のドキュメントを参照してください：
 
-このインフラストラクチャには Prometheus Node Exporter の設定が含まれています。Node Exporter はシステムメトリクスを収集し、Prometheus がスクレイピングできるようにします。
+- **[Terraform使用方法](docs/terraform-usage.md)** - terraform.shスクリプトの詳細な使用方法
+- **[Node Exporter設定](docs/node-exporter.md)** - Prometheus Node Exporterの設定とトラブルシューティング
+- **[Kubernetes設定](docs/kubernetes.md)** - Kubernetesマニフェストの管理と適用方法  
+- **[SSH設定](docs/ssh-configuration.md)** - SSH接続とセキュリティ設定
 
-### 設定オプション
+## 環境設定例
 
-Node Exporter の設定は以下の変数で制御できます：
-
-- `node_exporter_enabled` - Node Exporter を有効にするかどうか（デフォルト: true）
-- `node_exporter_version` - インストールする Node Exporter のバージョン（デフォルト: 1.6.1）
-- `node_exporter_port` - Node Exporter が使用するポート（デフォルト: 9100）
-
-これらの変数は各環境の `terraform.tfvars` ファイルで設定できます：
+### 開発環境 (environments/dev/terraform.tfvars)
 
 ```hcl
-# Node Exporter configuration
+environment = "dev"
+
+# Node Exporter
 node_exporter_enabled = true
 node_exporter_version = "1.6.1"
 node_exporter_port = 9100
-```
 
-## SSH接続オプション
-
-このインフラストラクチャはリモートホストにNode ExporterをデプロイするためにSSH接続を使用します。以下の変数でSSH接続を設定できます：
-
-- `target_host` - Node ExporterをインストールするターゲットホストのIPアドレス（デフォルト: 192.168.1.103）
-- `ssh_user` - リモート接続用のSSHユーザー名（デフォルト: kigawa）
-- `ssh_key_path` - SSHプライベートキーファイルへのパス（デフォルト: 空文字列）
-- `ssh_password` - SSHパスワード（SSHキーが利用できない場合に使用）（デフォルト: 空文字列）
-- `sudo_password` - sudo権限でコマンドを実行するためのパスワード（デフォルト: 空文字列）
-
-### sudo権限の要件
-
-Node Exporterのインストールスクリプトはroot権限を必要とするため、sudoを使用して実行されます。以下の点に注意してください：
-
-- インストールスクリプトはsudoコマンドを使用して実行されます
-- sudoがパスワードを要求する場合、以下のいずれかの方法で対応できます：
-  1. sudo_password変数を設定してsudoパスワードを提供する（最も簡単）
-  2. ターゲットホスト上でsudoをパスワードなしで設定する
-  3. rootユーザーとしてSSH接続を行う（ssh_userをrootに設定）
-
-#### sudo_password変数を使用する方法
-
-terraform.tfvarsファイルまたはコマンドラインでsudo_password変数を設定します：
-
-```hcl
-# terraform.tfvarsファイルに追加
-sudo_password = "your_sudo_password"
-```
-
-または、コマンドラインで指定：
-
-```bash
-./terraform.sh apply dev -var="sudo_password=your_sudo_password"
-```
-
-**注意**: セキュリティ上の理由から、sudo_passwordをバージョン管理されたファイルに保存しないでください。
-
-#### sudoをパスワードなしで設定する方法
-
-ターゲットホスト上で以下のコマンドを実行して、特定のユーザー（例：kigawa）がパスワードなしでsudoを使用できるようにします：
-
-```bash
-# ターゲットホスト上で実行
-echo "kigawa ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/kigawa
-sudo chmod 440 /etc/sudoers.d/kigawa
-```
-
-**注意**: セキュリティ上の理由から、本番環境では特定のコマンドのみにNOPASSWDを制限することを検討してください。
-
-### SSHキーの保存場所
-
-セキュリティ上の理由から、SSHの秘密鍵はgitの対象外の場所に保存する必要があります。推奨される保存場所は以下の通りです：
-
-- 開発環境: `~/.ssh/dev-key/infra_dev_key`
-- ステージング環境: `~/.ssh/key/infra_staging_key`
-- 本番環境: `~/.ssh/main/infra_prod_key`
-
-これらの変数は各環境の `terraform.tfvars` ファイルで設定できます：
-
-```hcl
-# SSH connection configuration
-target_host = "192.168.1.103"
-ssh_user = "ubuntu"
-ssh_key_path = "~/.ssh/dev-key/infra_dev_key"  # SSHキーのパスを指定（gitの対象外の場所に保存）
-ssh_password = ""  # SSHキーを使用する場合は空のままにします
-sudo_password = ""  # sudoパスワードが必要な場合に設定します
-```
-
-## Kubernetesマニフェスト
-
-このインフラストラクチャには、Terraformを使用してKubernetesクラスターに適用できるマニフェストが含まれています。
-
-### Kubernetesマニフェストの概要
-
-`kubernetes/manifests/` ディレクトリには以下のKubernetesマニフェストが含まれています：
-
-- `ingress.yml` - Prometheus Grafanaにアクセスするための Kubernetes Ingress リソース
-- `nginx-exporter.yml` - Nginx メトリクスを収集するための Deployment リソース（現在はコメントアウトされています）
-- `prometheus.yml` - Prometheus スタックをデプロイするための Argo CD Application リソース
-- `pve-exporter.yml` - Proxmox VE メトリクスを収集するための Deployment と Service リソース
-
-### Kubernetesマニフェストの適用方法
-
-このインフラストラクチャでは、Kubernetesマニフェストを適用するための2つの方法をサポートしています：
-
-1. **Kubernetes Provider方式**: Terraformの Kubernetes プロバイダーを使用して直接適用
-2. **SSH+kubectl方式**: 指定されたホスト（デフォルト: 192.168.1.50）にSSH接続し、kubectlコマンドを使用して適用
-
-デフォルトでは、**SSH+kubectl方式**が使用されます。
-
-### Kubernetes設定オプション
-
-Kubernetesマニフェストの適用は以下の変数で制御できます：
-
-#### 共通設定
-
-- `apply_k8s_manifests` - Kubernetesマニフェストを適用するかどうか（デフォルト: true）
-- `apply_nginx_exporter` - nginx-exporterマニフェストを適用するかどうか（デフォルト: false、コメントアウトされているため）
-
-#### 適用方法の選択
-
-- `use_ssh_kubectl` - SSH+kubectl方式を使用するかどうか（デフォルト: true）。falseの場合はKubernetes Provider方式が使用されます
-
-#### Kubernetes Provider方式の設定（use_ssh_kubectl = false の場合）
-
-- `kubernetes_config_path` - Kubernetesの設定ファイルへのパス（デフォルト: "~/.kube/config"）
-- `kubernetes_config_context` - 使用するKubernetes設定コンテキスト（デフォルト: ""、現在のコンテキストを使用）
-
-#### SSH+kubectl方式の設定（use_ssh_kubectl = true の場合）
-
-- `target_host` - SSH接続先のホストIPアドレス（デフォルト: "192.168.1.50"）
-- `ssh_user` - SSH接続用のユーザー名（デフォルト: "kigawa"）
-- `ssh_key_path` - SSH秘密鍵へのパス（デフォルト: ""）
-- `ssh_password` - SSHパスワード（SSH鍵が利用できない場合）（デフォルト: ""）
-- `remote_manifests_dir` - リモートホスト上でマニフェストをコピーするディレクトリ（デフォルト: "/tmp/k8s-manifests"）
-- `remote_kubectl_context` - リモートホスト上で使用するkubectlコンテキスト（デフォルト: ""、現在のコンテキストを使用）
-
-これらの変数は各環境の `terraform.tfvars` ファイルで設定できます：
-
-```hcl
-# Kubernetes configuration - SSH+kubectl方式（デフォルト）
-target_host = "192.168.1.50"
+# SSH設定
+target_host = "192.168.1.120"  # k8s4
 ssh_user = "kigawa"
-ssh_key_path = "~/.ssh/main/infra_prod_key"
-use_ssh_kubectl = true
-apply_k8s_manifests = true
-apply_nginx_exporter = false
+ssh_key_path = "~/.ssh/key/id_ed25519"
 
-# または、Kubernetes Provider方式
-use_ssh_kubectl = false
-kubernetes_config_path = "~/.kube/config"
-kubernetes_config_context = "my-cluster-context"
+# Kubernetes設定
 apply_k8s_manifests = true
+use_ssh_kubectl = true
+apply_nginx_exporter = false
 ```
 
-### Kubernetesマニフェストの適用
-
-Kubernetesマニフェストを適用するには、通常のTerraform操作を使用します：
+## よくある使用例
 
 ```bash
-# 開発環境でKubernetesマニフェストを適用する計画を作成
-./terraform.sh plan dev
+# sudo_passwordを指定してデプロイ
+./terraform.sh apply dev -var="sudo_password=your_password"
 
-# 開発環境にKubernetesマニフェストを適用（SSH+kubectl方式）
-./terraform.sh apply dev
-
-# 本番環境にKubernetesマニフェストを適用（特定の変数を上書き）
+# nginx-exporterを有効にしてデプロイ
 ./terraform.sh apply prod -var="apply_nginx_exporter=true"
 
-# Kubernetes Provider方式を使用して適用
+# Kubernetes Provider方式でデプロイ
 ./terraform.sh apply prod -var="use_ssh_kubectl=false"
 ```
 
-### 注意事項
+## セキュリティ注意事項
 
-- SSH+kubectl方式を使用する場合：
-  - リモートホスト（デフォルト: 192.168.1.50）にSSHでアクセスできる必要があります
-  - リモートホストにkubectlがインストールされている必要があります
-  - リモートホスト上のkubectlがKubernetesクラスターにアクセスできる必要があります
+- SSH秘密鍵はgitリポジトリに含めない
+- `sudo_password`をバージョン管理に含めない
+- 本番環境では最小権限の原則に従う
 
-- Kubernetes Provider方式を使用する場合：
-  - ローカルマシンからKubernetesクラスターにアクセスできる必要があります
-  - 指定されたkubeconfigファイルが有効である必要があります
+## トラブルシューティング
 
-- 共通の注意事項：
-  - `nginx-exporter.yml` はデフォルトでコメントアウトされているため、適用するには `apply_nginx_exporter=true` を設定する必要があります
-  - Argo CDが設定されている場合、`prometheus.yml` のApplication リソースはArgo CDによって処理されます
+問題が発生した場合は、以下を確認してください：
 
-## Terraform出力
+1. SSH接続: `ssh -i ~/.ssh/key/id_ed25519 kigawa@192.168.1.120`
+2. sudo権限: リモートホストでパスワードなしsudoが設定されているか
+3. Kubernetes設定: kubeconfigファイルが正しく配置されているか
 
-このインフラストラクチャは、デプロイ後に以下の出力値を提供します：
-
-- `target_host` - Node Exporterインストール用のターゲットホスト
-- `node_exporter_version` - 設定されたNode Exporterのバージョン（無効な場合は "disabled"）
-- `node_exporter_port` - Node Exporter用に設定されたポート（無効な場合は "N/A"）
-- `node_exporter_url` - Node ExporterメトリクスにアクセスするためのURL（無効な場合は "N/A"）
-- `installation_status` - インストールステータスメッセージ
-
-これらの出力値は、`terraform apply` または `./terraform.sh apply [環境]` コマンドの実行後に表示されます。
+詳細なトラブルシューティング情報は各ドキュメントを参照してください。
