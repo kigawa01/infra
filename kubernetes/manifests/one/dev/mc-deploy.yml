@@ -25,6 +25,7 @@ spec:
       initContainers:
         - image: kigawa01/fonsole:main
           name: restore
+          imagePullPolicy: Always
           resources:
             limits:
               memory: 768Mi
@@ -54,6 +55,7 @@ spec:
               mountPath: /data
         - image: ubuntu
           name: setup
+          workingDir: /data
           volumeMounts:
             - name: mc
               mountPath: /data
@@ -62,7 +64,7 @@ spec:
           # https://docker-minecraft-server.readthedocs.io/en/latest/
           resources:
             limits:
-              memory: 1Gi
+              memory: 2Gi
           image: harbor.kigawa.net/private/one-mc:develop-07013bf56965c6849b6b80d71827e7233df3f658
           ports:
             - containerPort: 25565
