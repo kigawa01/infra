@@ -58,7 +58,7 @@ spec:
           resources:
             limits:
               memory: 1Gi
-          image: itzg/minecraft-server
+          image: harbor.kigawa.net/library/one-mc:develop-93b55971a0367cbe76efe3ffe1a041b5e26d71de
           ports:
             - containerPort: 25565
           workingDir: /data
