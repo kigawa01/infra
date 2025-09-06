@@ -2,13 +2,12 @@
 ---
 
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
   name: dev-mc-deploy
   namespace: one
 spec:
   replicas: 1
-  serviceName: "dev-mc"
   selector:
     matchLabels:
       app: dev-mc-deploy
@@ -47,11 +46,17 @@ spec:
             - name: MONGO_HOST
               value: "mongo-svc.fonsole.svc.cluster.local"
             - name: BACKUP_PATH
-              value: "/app"
+              value: "/data"
           args:
             - restore
+          volumeMounts:
+            - name: mc
+              mountPath: /data
         - image: ubuntu
           name: setup
+          volumeMounts:
+            - name: mc
+              mountPath: /data
       containers:
         - name: dev-mc
           # https://docker-minecraft-server.readthedocs.io/en/latest/
@@ -65,3 +70,8 @@ spec:
           volumeMounts:
             - name: mc
               mountPath: /data
+      volumes:
+        - name: mc
+          emptyDir:
+            {}
+

@@ -95,3 +95,9 @@ variable "remote_kubectl_context" {
   type        = string
   default     = ""
 }
+
+variable "apply_one_dev_manifests" {
+  description = "Whether to apply one/dev Kubernetes manifests"
+  type        = bool
+  default     = false
+}
