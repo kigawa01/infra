@@ -51,14 +51,14 @@ spec:
           args:
             - restore
           volumeMounts:
-            - name: mc
-              mountPath: /data
+            - name: mc-world
+              mountPath: /data/worlds
         - image: ubuntu
           name: setup
           workingDir: /data
           volumeMounts:
-            - name: mc
-              mountPath: /data
+            - name: mc-world
+              mountPath: /data/worlds
       containers:
         - name: dev-mc
           # https://docker-minecraft-server.readthedocs.io/en/latest/
@@ -70,10 +70,10 @@ spec:
             - containerPort: 25565
           workingDir: /data
           volumeMounts:
-            - name: mc
-              mountPath: /data
+            - name: mc-world
+              mountPath: /data/worlds
       volumes:
-        - name: mc
+        - name: mc-world
           emptyDir:
             {}
 
