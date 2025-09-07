@@ -65,7 +65,7 @@ spec:
           resources:
             limits:
               memory: 2Gi
-          image: harbor.kigawa.net/private/one-mc:develop-07013bf56965c6849b6b80d71827e7233df3f658
+          image: harbor.kigawa.net/private/one-mc:develop-7ee214a4aafbbe4a144a6395bc5d8b40e10aecd3
           ports:
             - containerPort: 25565
           workingDir: /data
@@ -74,6 +74,4 @@ spec:
               mountPath: /data/worlds
       volumes:
         - name: mc-world
-          emptyDir:
-            {}
-
+          emptyDir: {}
