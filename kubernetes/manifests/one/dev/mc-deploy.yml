@@ -65,7 +65,7 @@ spec:
           resources:
             limits:
               memory: 2Gi
-          image: harbor.kigawa.net/private/one-mc:develop-7ee214a4aafbbe4a144a6395bc5d8b40e10aecd3
+          image: harbor.kigawa.net/private/one-mc:develop-8d21c5532560a63b43168b2914d1127a5acf0203
           ports:
             - containerPort: 25565
           workingDir: /app
