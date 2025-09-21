@@ -1,55 +1,45 @@
 # Apply Kubernetes manifests
 locals {
-  # Read and parse the Kubernetes manifests
-  ingress_yaml = var.apply_k8s_manifests ? file("${path.module}/manifests/ingress.yml") : ""
-  prometheus_yaml = var.apply_k8s_manifests ? file("${path.module}/manifests/prometheus.yml") : ""
-  pve_exporter_yaml = var.apply_k8s_manifests ? file("${path.module}/manifests/pve-exporter.yml") : ""
-  nginx_exporter_yaml = var.apply_k8s_manifests && var.apply_nginx_exporter ? file("${path.module}/manifests/nginx-exporter.yml") : ""
+  # Discover all manifest files in the manifests directory
+  manifest_files_glob = var.apply_k8s_manifests ? fileset("${path.module}/manifests", "**/*.{yml,yaml}") : []
   
-  # Read one/dev manifests if enabled
-  one_dev_mc_deploy_yaml = var.apply_one_dev_manifests ? file("${path.module}/manifests/one/dev/mc-deploy.yml") : ""
-  one_dev_mc_svc_yaml = var.apply_one_dev_manifests ? file("${path.module}/manifests/one/dev/mc-svc.yml") : ""
-  one_dev_harbor_secret_yaml = var.apply_one_dev_manifests ? file("${path.module}/manifests/one/dev/harbor-account-secret.yml") : ""
+  # Create a map of manifest files to their content
+  manifest_files_content = var.apply_k8s_manifests ? {
+    for file_path in local.manifest_files_glob :
+    file_path => file("${path.module}/manifests/${file_path}")
+  } : {}
   
-  # Parse the YAML files into Terraform-compatible format (only used if use_ssh_kubectl is false)
-  ingress_manifest = var.apply_k8s_manifests && !var.use_ssh_kubectl && local.ingress_yaml != "" ? yamldecode(local.ingress_yaml) : null
-  prometheus_manifest = var.apply_k8s_manifests && !var.use_ssh_kubectl && local.prometheus_yaml != "" ? yamldecode(local.prometheus_yaml) : null
+  # Parse all manifest files into Terraform-compatible format
+  manifest_files_parsed = var.apply_k8s_manifests && !var.use_ssh_kubectl ? {
+    for file_path, content in local.manifest_files_content :
+    file_path => content != "" ? [
+      for doc in split("---", content) :
+      yamldecode(doc) if trimspace(doc) != "" && !startswith(trimspace(doc), "#")
+    ] : []
+  } : {
+    for file_path in local.manifest_files_glob :
+    file_path => []
+  }
   
-  # The pve-exporter.yml file contains multiple manifests, so we need to split them
-  pve_exporter_manifests = var.apply_k8s_manifests && !var.use_ssh_kubectl && local.pve_exporter_yaml != "" ? [
-    for doc in split("---", local.pve_exporter_yaml) : 
-    yamldecode(doc) if trimspace(doc) != ""
-  ] : null
+  # Flatten all manifests into a single list with file path info
+  all_manifests = var.apply_k8s_manifests && !var.use_ssh_kubectl ? flatten([
+    for file_path, manifests in local.manifest_files_parsed :
+    [
+      for idx, manifest in manifests :
+      {
+        key      = "${file_path}-${idx}"
+        manifest = manifest
+        file_path = file_path
+      }
+    ]
+  ]) : []
   
-  # Only parse nginx-exporter.yml if apply_nginx_exporter is true
-  # Note: This file is commented out, so it would need to be uncommented before use
-  nginx_exporter_manifest = var.apply_k8s_manifests && var.apply_nginx_exporter && !var.use_ssh_kubectl && local.nginx_exporter_yaml != "" ? yamldecode(local.nginx_exporter_yaml) : null
   
-  # Parse one/dev manifests for direct Kubernetes provider usage
-  one_dev_mc_deploy_manifests = var.apply_one_dev_manifests && !var.use_ssh_kubectl && local.one_dev_mc_deploy_yaml != "" ? [
-    for doc in split("---", local.one_dev_mc_deploy_yaml) : 
-    yamldecode(doc) if trimspace(doc) != ""
+  # List of all manifest files to copy for SSH+kubectl method (dynamically discovered)
+  all_manifest_file_paths = var.apply_k8s_manifests ? [
+    for file_path in local.manifest_files_glob :
+    "${path.root}/kubernetes/manifests/${file_path}"
   ] : []
-  one_dev_mc_svc_manifest = var.apply_one_dev_manifests && !var.use_ssh_kubectl && local.one_dev_mc_svc_yaml != "" ? yamldecode(local.one_dev_mc_svc_yaml) : null
-  one_dev_harbor_secret_manifest = var.apply_one_dev_manifests && !var.use_ssh_kubectl && local.one_dev_harbor_secret_yaml != "" ? yamldecode(local.one_dev_harbor_secret_yaml) : null
-  
-  # List of manifest files to copy for SSH+kubectl method
-  manifest_files = [
-    "${path.root}/kubernetes/manifests/ingress.yml",
-    "${path.root}/kubernetes/manifests/prometheus.yml",
-    "${path.root}/kubernetes/manifests/pve-exporter.yml",
-    var.apply_nginx_exporter ? "${path.root}/kubernetes/manifests/nginx-exporter.yml" : ""
-  ]
-  
-  # List of one/dev manifest files for SSH+kubectl method
-  one_dev_manifest_files = var.apply_one_dev_manifests ? [
-    "${path.root}/kubernetes/manifests/one/dev/harbor-account-secret.yml",
-    "${path.root}/kubernetes/manifests/one/dev/mc-deploy.yml",
-    "${path.root}/kubernetes/manifests/one/dev/mc-svc.yml"
-  ] : []
-  
-  # Filter out empty strings from the list
-  manifest_files_filtered = [for f in local.manifest_files : f if f != ""]
   
   # SSH options for secure connections
   ssh_options = var.ssh_key_path != "" ? "-i ${var.ssh_key_path} -o StrictHostKeyChecking=no" : "-o StrictHostKeyChecking=no"
@@ -68,7 +58,7 @@ resource "local_file" "kubectl_apply_script" {
     remote_manifests_dir = var.remote_manifests_dir
     kubectl_context     = var.remote_kubectl_context
     apply_nginx_exporter = var.apply_nginx_exporter ? "true" : "false"
-    manifests_to_copy   = join(" ", local.manifest_files_filtered)
+    manifests_to_copy   = join(" ", local.all_manifest_file_paths)
   })
   
   file_permission = "0755"
@@ -111,140 +101,22 @@ resource "null_resource" "apply_k8s_via_ssh" {
   
   triggers = {
     script_hash = local_file.kubectl_apply_script[0].content_md5
-    # Also trigger on manifest changes
-    ingress_hash = var.apply_k8s_manifests ? filemd5("${path.root}/kubernetes/manifests/ingress.yml") : ""
-    prometheus_hash = var.apply_k8s_manifests ? filemd5("${path.root}/kubernetes/manifests/prometheus.yml") : ""
-    pve_exporter_hash = var.apply_k8s_manifests ? filemd5("${path.root}/kubernetes/manifests/pve-exporter.yml") : ""
-    nginx_exporter_hash = var.apply_k8s_manifests && var.apply_nginx_exporter ? filemd5("${path.root}/kubernetes/manifests/nginx-exporter.yml") : ""
+    # Trigger on any manifest file changes
+    manifests_hash = var.apply_k8s_manifests ? join("-", [
+      for file_path in local.manifest_files_glob : 
+      filemd5("${path.root}/kubernetes/manifests/${file_path}")
+    ]) : ""
   }
 }
 
-# Apply the Ingress manifest using Kubernetes provider (if use_ssh_kubectl is false)
-resource "kubernetes_manifest" "prometheus_ingress" {
-  count = var.apply_k8s_manifests && !var.use_ssh_kubectl && local.ingress_manifest != null ? 1 : 0
+# Apply all discovered manifests using Kubernetes provider (if use_ssh_kubectl is false)
+resource "kubernetes_manifest" "all_manifests" {
+  count = var.apply_k8s_manifests && !var.use_ssh_kubectl ? length(local.all_manifests) : 0
   
-  manifest = local.ingress_manifest
+  manifest = local.all_manifests[count.index].manifest
   
   field_manager {
     # Force conflicts with server-side apply
     force_conflicts = true
-  }
-}
-
-# Apply the Prometheus manifest using Kubernetes provider (if use_ssh_kubectl is false)
-resource "kubernetes_manifest" "prometheus_application" {
-  count = var.apply_k8s_manifests && !var.use_ssh_kubectl && local.prometheus_manifest != null ? 1 : 0
-  
-  manifest = local.prometheus_manifest
-  
-  field_manager {
-    # Force conflicts with server-side apply
-    force_conflicts = true
-  }
-}
-
-# Apply the PVE Exporter manifests using Kubernetes provider (if use_ssh_kubectl is false)
-resource "kubernetes_manifest" "pve_exporter" {
-  count = var.apply_k8s_manifests && !var.use_ssh_kubectl && local.pve_exporter_manifests != null ? length(local.pve_exporter_manifests) : 0
-  
-  manifest = local.pve_exporter_manifests[count.index]
-  
-  field_manager {
-    # Force conflicts with server-side apply
-    force_conflicts = true
-  }
-}
-
-# Apply the Nginx Exporter manifest using Kubernetes provider (if use_ssh_kubectl is false and enabled)
-resource "kubernetes_manifest" "nginx_exporter" {
-  count = var.apply_k8s_manifests && var.apply_nginx_exporter && !var.use_ssh_kubectl && local.nginx_exporter_manifest != null ? 1 : 0
-  
-  manifest = local.nginx_exporter_manifest
-  
-  field_manager {
-    # Force conflicts with server-side apply
-    force_conflicts = true
-  }
-}
-
-# Apply one/dev manifests using Kubernetes provider (if use_ssh_kubectl is false)
-resource "kubernetes_manifest" "one_dev_harbor_secret" {
-  count = var.apply_one_dev_manifests && !var.use_ssh_kubectl && local.one_dev_harbor_secret_manifest != null ? 1 : 0
-  
-  manifest = local.one_dev_harbor_secret_manifest
-  
-  field_manager {
-    # Force conflicts with server-side apply
-    force_conflicts = true
-  }
-}
-
-resource "kubernetes_manifest" "one_dev_mc_deploy" {
-  count = var.apply_one_dev_manifests && !var.use_ssh_kubectl ? length(local.one_dev_mc_deploy_manifests) : 0
-  
-  manifest = local.one_dev_mc_deploy_manifests[count.index]
-  
-  depends_on = [
-    kubernetes_manifest.one_dev_harbor_secret
-  ]
-  
-  field_manager {
-    # Force conflicts with server-side apply
-    force_conflicts = true
-  }
-}
-
-resource "kubernetes_manifest" "one_dev_mc_svc" {
-  count = var.apply_one_dev_manifests && !var.use_ssh_kubectl && local.one_dev_mc_svc_manifest != null ? 1 : 0
-  
-  manifest = local.one_dev_mc_svc_manifest
-  
-  depends_on = [
-    kubernetes_manifest.one_dev_mc_deploy
-  ]
-  
-  field_manager {
-    # Force conflicts with server-side apply
-    force_conflicts = true
-  }
-}
-
-# Create kubectl apply script for one/dev manifests SSH method
-resource "local_file" "kubectl_apply_one_dev_script" {
-  count = var.apply_one_dev_manifests && var.use_ssh_kubectl ? 1 : 0
-  
-  filename = "${path.root}/generated/kubectl_apply_one_dev.sh"
-  content = templatefile("${path.module}/templates/kubectl_apply_one_dev.sh.tpl", {
-    target_host         = var.target_host
-    ssh_user            = var.ssh_user
-    ssh_key             = var.ssh_key_path
-    ssh_options         = local.ssh_options
-    remote_manifests_dir = var.remote_manifests_dir
-    kubectl_context     = var.remote_kubectl_context
-    manifests_to_copy   = join(" ", local.one_dev_manifest_files)
-  })
-  
-  file_permission = "0755"
-}
-
-# Execute kubectl apply for one/dev via SSH
-resource "null_resource" "apply_one_dev_via_ssh" {
-  count = var.apply_one_dev_manifests && var.use_ssh_kubectl ? 1 : 0
-  
-  depends_on = [
-    local_file.kubectl_apply_one_dev_script,
-    null_resource.test_k8s_ssh_connection
-  ]
-  
-  provisioner "local-exec" {
-    command = "${path.root}/generated/kubectl_apply_one_dev.sh"
-  }
-  
-  triggers = {
-    script_hash = local_file.kubectl_apply_one_dev_script[0].content_md5
-    # Also trigger on manifest changes
-    mc_deploy_hash = var.apply_one_dev_manifests ? filemd5("${path.root}/kubernetes/manifests/one/dev/mc-deploy.yml") : ""
-    mc_svc_hash = var.apply_one_dev_manifests ? filemd5("${path.root}/kubernetes/manifests/one/dev/mc-svc.yml") : ""
-    harbor_secret_hash = var.apply_one_dev_manifests ? filemd5("${path.root}/kubernetes/manifests/one/dev/harbor-account-secret.yml") : ""
   }
 }

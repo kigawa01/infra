@@ -68,10 +68,10 @@ spec:
           image: harbor.kigawa.net/private/one-mc:develop-7ee214a4aafbbe4a144a6395bc5d8b40e10aecd3
           ports:
             - containerPort: 25565
-          workingDir: /data
+          workingDir: /app
           volumeMounts:
             - name: mc-world
-              mountPath: /data/worlds
+              mountPath: /app/worlds
       volumes:
         - name: mc-world
           emptyDir: {}

@@ -51,29 +51,17 @@ ssh ${ssh_options} "${ssh_user}@${target_host}" "
     set -e
     cd ${remote_manifests_dir}
     
-    # Apply ingress manifest
-    if [ -f 'ingress.yml' ]; then
-        echo 'Applying ingress.yml'
-        kubectl apply $KUBECTL_CONTEXT_CMD -f ingress.yml
-    fi
-    
-    # Apply prometheus manifest
-    if [ -f 'prometheus.yml' ]; then
-        echo 'Applying prometheus.yml'
-        kubectl apply $KUBECTL_CONTEXT_CMD -f prometheus.yml
-    fi
-    
-    # Apply pve-exporter manifest
-    if [ -f 'pve-exporter.yml' ]; then
-        echo 'Applying pve-exporter.yml'
-        kubectl apply $KUBECTL_CONTEXT_CMD -f pve-exporter.yml
-    fi
-    
-    # Apply nginx-exporter manifest if enabled
-    if [ -f 'nginx-exporter.yml' ] && [ '${apply_nginx_exporter}' = 'true' ]; then
-        echo 'Applying nginx-exporter.yml'
-        kubectl apply $KUBECTL_CONTEXT_CMD -f nginx-exporter.yml
-    fi
+    # Apply all manifest files dynamically
+    for yaml_file in \$(find . -name '*.yml' -o -name '*.yaml' | sort); do
+        # Skip nginx-exporter.yml if not enabled
+        if [[ \"\$yaml_file\" == *\"nginx-exporter.yml\"* ]] && [ '${apply_nginx_exporter}' != 'true' ]; then
+            echo \"Skipping \$yaml_file (nginx-exporter disabled)\"
+            continue
+        fi
+        
+        echo \"Applying \$yaml_file\"
+        kubectl apply \$KUBECTL_CONTEXT_CMD -f \"\$yaml_file\"
+    done
 "
 
 log_info "Kubernetes manifests applied successfully!"

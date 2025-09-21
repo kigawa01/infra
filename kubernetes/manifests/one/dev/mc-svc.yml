@@ -2,12 +2,13 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: mc-build
+  name: dev-mc
+  namespace: one
   annotations:
     "mc-router.itzg.me/externalServerName": "dev.onemc.world"
 spec:
   selector:
-    app: mc-build
+    app: dev-mc-deploy
   ports:
     - protocol: TCP
       port: 25565
