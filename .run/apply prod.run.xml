@@ -12,8 +12,6 @@
     <option name="EXECUTE_IN_TERMINAL" value="false" />
     <option name="EXECUTE_SCRIPT_FILE" value="true" />
     <envs />
-    <method v="2">
-      <option name="RunConfigurationTask" enabled="true" run_configuration_name="Init infra" run_configuration_type="TerraformConfigurationType" />
-    </method>
+    <method v="2" />
   </configuration>
 </component>

@@ -210,15 +210,15 @@ case "$COMMAND" in
     ;;
   plan)
     echo -e "${GREEN}Running:${NC} terraform plan $VAR_FILE_ARG $*"
-    terraform plan $VAR_FILE_ARG "$@"
+    terraform plan "$VAR_FILE_ARG" "$@"
     ;;
   apply)
     echo -e "${GREEN}Running:${NC} terraform apply $VAR_FILE_ARG $*"
-    terraform apply $VAR_FILE_ARG "$@"
+    terraform apply "$VAR_FILE_ARG" "$@"
     ;;
   destroy)
     echo -e "${GREEN}Running:${NC} terraform destroy $VAR_FILE_ARG $*"
-    terraform destroy $VAR_FILE_ARG "$@"
+    terraform destroy "$VAR_FILE_ARG" "$@"
     ;;
   validate)
     echo -e "${GREEN}Running:${NC} terraform validate $*"

@@ -81,7 +81,7 @@ variable "apply_nginx_exporter" {
 variable "use_ssh_kubectl" {
   description = "Whether to use SSH+kubectl instead of the Kubernetes provider for applying manifests"
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "remote_manifests_dir" {

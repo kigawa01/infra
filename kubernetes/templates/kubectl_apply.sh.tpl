@@ -35,7 +35,7 @@ ssh ${ssh_options} "${ssh_user}@${target_host}" "mkdir -p ${remote_manifests_dir
 
 # Copy all manifest files to the remote host
 log_info "Copying Kubernetes manifests to remote host"
-scp ${ssh_options} ${manifests_to_copy} "${ssh_user}@${target_host}:${remote_manifests_dir}/"
+rsync -avz ${ssh_options} --rsync-path="rsync" kubernetes/manifests/ "${ssh_user}@${target_host}:${remote_manifests_dir}/"
 
 # Apply the manifests using kubectl on the remote host
 log_info "Applying Kubernetes manifests on remote host"
@@ -52,16 +52,41 @@ ssh ${ssh_options} "${ssh_user}@${target_host}" "
     cd ${remote_manifests_dir}
     
     # Apply all manifest files dynamically
+    deployed_deployments=()
     for yaml_file in \$(find . -name '*.yml' -o -name '*.yaml' | sort); do
         # Skip nginx-exporter.yml if not enabled
         if [[ \"\$yaml_file\" == *\"nginx-exporter.yml\"* ]] && [ '${apply_nginx_exporter}' != 'true' ]; then
             echo \"Skipping \$yaml_file (nginx-exporter disabled)\"
             continue
         fi
-        
+
         echo \"Applying \$yaml_file\"
         kubectl apply \$KUBECTL_CONTEXT_CMD -f \"\$yaml_file\"
+
+        # Check if this file contains a Deployment and collect namespace/name
+        if grep -q \"kind: Deployment\" \"\$yaml_file\"; then
+            namespace=\$(grep -A 10 \"kind: Deployment\" \"\$yaml_file\" | grep \"namespace:\" | head -1 | awk '{print \$2}' || echo \"default\")
+            name=\$(grep -A 10 \"kind: Deployment\" \"\$yaml_file\" | grep \"name:\" | head -1 | awk '{print \$2}')
+            if [[ -n \"\$name\" ]]; then
+                deployed_deployments+=(\"\$namespace/\$name\")
+            fi
+        fi
     done
+
+    # Restart all deployments to ensure new images are pulled
+    if [[ \$${#deployed_deployments[@]} -gt 0 ]]; then
+        echo \"Restarting deployments to pick up new images...\"
+        # Remove duplicates from the array
+        unique_deployments=(\$(printf '%s\n' \"\$${deployed_deployments[@]}\" | sort -u))
+        for deployment in \"\$${unique_deployments[@]}\"; do
+            namespace=\$(echo \"\$deployment\" | cut -d'/' -f1)
+            name=\$(echo \"\$deployment\" | cut -d'/' -f2)
+            echo \"Restarting deployment \$name in namespace \$namespace\"
+            kubectl rollout restart \$KUBECTL_CONTEXT_CMD deployment \"\$name\" -n \"\$namespace\"
+            # Add a small delay to avoid kubectl conflicts
+            sleep 1
+        done
+    fi
 "
 
 log_info "Kubernetes manifests applied successfully!"
