@@ -27,6 +27,8 @@ spec:
             limits:
               memory: 768Mi
           env:
+            - name: RESTORE_TARGET_DIRECTORY
+              value: "world"
             - name: MONGO_USERNAME
               valueFrom:
                 secretKeyRef:
