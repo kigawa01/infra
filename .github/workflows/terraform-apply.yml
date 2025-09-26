@@ -83,7 +83,7 @@ jobs:
 
       - name: Terraform Plan
         run: |
-          ./terraform.sh plan ${{ steps.set-env.outputs.environment }} -out=tfplan
+          ./terraform.sh plan ${{ steps.set-env.outputs.environment }} -var="environment=${{ steps.set-env.outputs.environment }}" -out=tfplan
 
       - name: Terraform Apply (with approval)
         if: steps.set-env.outputs.auto_approve == 'false'
@@ -93,7 +93,7 @@ jobs:
       - name: Terraform Apply (auto-approve)
         if: steps.set-env.outputs.auto_approve == 'true'
         run: |
-          ./terraform.sh apply ${{ steps.set-env.outputs.environment }} -auto-approve
+          ./terraform.sh apply ${{ steps.set-env.outputs.environment }} -var="environment=${{ steps.set-env.outputs.environment }}" -auto-approve
 
       - name: Output summary
         if: always()
