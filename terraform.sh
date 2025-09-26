@@ -218,7 +218,11 @@ case "$COMMAND" in
     fi
     ;;
   apply)
-    if [ -n "$VAR_FILE_ARG" ]; then
+    # Check if first argument is a plan file (no -var-file needed for saved plans)
+    if [[ "$1" == *.tfplan ]] || [[ "$1" == tfplan ]]; then
+      echo -e "${GREEN}Running:${NC} terraform apply $*"
+      terraform apply "$@"
+    elif [ -n "$VAR_FILE_ARG" ]; then
       echo -e "${GREEN}Running:${NC} terraform apply $VAR_FILE_ARG $*"
       terraform apply $VAR_FILE_ARG "$@"
     else
