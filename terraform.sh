@@ -209,16 +209,31 @@ case "$COMMAND" in
     terraform init "$@"
     ;;
   plan)
-    echo -e "${GREEN}Running:${NC} terraform plan $VAR_FILE_ARG $*"
-    terraform plan "$VAR_FILE_ARG" "$@"
+    if [ -n "$VAR_FILE_ARG" ]; then
+      echo -e "${GREEN}Running:${NC} terraform plan $VAR_FILE_ARG $*"
+      terraform plan $VAR_FILE_ARG "$@"
+    else
+      echo -e "${GREEN}Running:${NC} terraform plan $*"
+      terraform plan "$@"
+    fi
     ;;
   apply)
-    echo -e "${GREEN}Running:${NC} terraform apply $VAR_FILE_ARG $*"
-    terraform apply "$VAR_FILE_ARG" "$@"
+    if [ -n "$VAR_FILE_ARG" ]; then
+      echo -e "${GREEN}Running:${NC} terraform apply $VAR_FILE_ARG $*"
+      terraform apply $VAR_FILE_ARG "$@"
+    else
+      echo -e "${GREEN}Running:${NC} terraform apply $*"
+      terraform apply "$@"
+    fi
     ;;
   destroy)
-    echo -e "${GREEN}Running:${NC} terraform destroy $VAR_FILE_ARG $*"
-    terraform destroy "$VAR_FILE_ARG" "$@"
+    if [ -n "$VAR_FILE_ARG" ]; then
+      echo -e "${GREEN}Running:${NC} terraform destroy $VAR_FILE_ARG $*"
+      terraform destroy $VAR_FILE_ARG "$@"
+    else
+      echo -e "${GREEN}Running:${NC} terraform destroy $*"
+      terraform destroy "$@"
+    fi
     ;;
   validate)
     echo -e "${GREEN}Running:${NC} terraform validate $*"
