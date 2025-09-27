@@ -27,7 +27,7 @@ host one-sakura
 	hostname 133.242.178.198
 	user kigawa
 	port 22
-	identityfile C://Users/kigaw/.ssh/key/id_ed25519
+	identityfile ./ssh-keys/id_ed25519
 
 host knot-resolver2
 	hostname 192.168.1.105

@@ -68,3 +68,4 @@ id_dsa
 /environments/**/terraform.tfvars
 /legacy/
 /kubernetes/manifests/one/dev/harbor-account-secret.yml
+/ssh-keys/id_ed25519

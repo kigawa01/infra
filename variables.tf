@@ -101,3 +101,16 @@ variable "apply_one_dev_manifests" {
   type        = bool
   default     = false
 }
+
+# Nginx configuration variables
+variable "nginx_enabled" {
+  description = "Whether to enable nginx installation and configuration"
+  type        = bool
+  default     = false
+}
+
+variable "nginx_server_name" {
+  description = "Server name for nginx configuration"
+  type        = string
+  default     = "_"
+}
