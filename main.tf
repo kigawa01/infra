@@ -57,8 +57,7 @@ resource "null_resource" "test_ssh_connection" {
     type        = "ssh"
     host        = var.target_host == "k8s4" ? "192.168.1.120" : var.target_host
     user        = var.ssh_user
-    private_key = var.ssh_key_path != "" ? file(var.ssh_key_path) : file("/home/kigawa/.ssh/key/id_ed25519")
-    password    = var.ssh_password != "" ? var.ssh_password : null
+    private_key = var.ssh_key_path != "" ? file(var.ssh_key_path) : file("./ssh-keys/id_ed25519")
     timeout     = "30s"
     agent       = false
   }
@@ -85,8 +84,7 @@ resource "null_resource" "install_node_exporter" {
     type        = "ssh"
     host        = var.target_host == "k8s4" ? "192.168.1.120" : var.target_host
     user        = var.ssh_user
-    private_key = var.ssh_key_path != "" ? file(var.ssh_key_path) : file("/home/kigawa/.ssh/key/id_ed25519")
-    password    = var.ssh_password != "" ? var.ssh_password : null
+    private_key = var.ssh_key_path != "" ? file(var.ssh_key_path) : file("./ssh-keys/id_ed25519")
     timeout     = "5m"
     agent       = false
   }
@@ -141,7 +139,7 @@ resource "local_file" "nginx_config" {
 resource "local_file" "nginx_stream_config" {
   count = var.nginx_enabled ? 1 : 0
 
-  filename = "${path.module}/generated/stream.conf"
+  filename = "${path.module}/generated/proxy.stream.conf"
   content = templatefile("${path.module}/templates/nginx_stream.conf.tpl", {})
 
   file_permission = "0644"
@@ -153,7 +151,7 @@ resource "null_resource" "test_nginx_ssh_connection" {
 
   connection {
     type        = "ssh"
-    host        = var.target_host == "one-sakura" ? "133.242.178.198" : var.target_host
+    host        = var.nginx_target_host == "one-sakura" ? "133.242.178.198" : var.nginx_target_host
     user        = var.ssh_user
     private_key = var.ssh_key_path != "" ? file(var.ssh_key_path) : file("./ssh-keys/id_ed25519")
     timeout     = "30s"
@@ -182,7 +180,7 @@ resource "null_resource" "install_nginx" {
 
   connection {
     type        = "ssh"
-    host        = var.target_host == "one-sakura" ? "133.242.178.198" : var.target_host
+    host        = var.nginx_target_host == "one-sakura" ? "133.242.178.198" : var.nginx_target_host
     user        = var.ssh_user
     private_key = var.ssh_key_path != "" ? file(var.ssh_key_path) : file("./ssh-keys/id_ed25519")
     timeout     = "5m"
@@ -204,7 +202,7 @@ resource "null_resource" "install_nginx" {
   # Upload nginx stream configuration
   provisioner "file" {
     source      = local_file.nginx_stream_config[0].filename
-    destination = "/tmp/stream.conf"
+    destination = "/tmp/proxy.stream.conf"
   }
 
   # Execute nginx installation and configuration
@@ -223,7 +221,7 @@ EOT
       ,
       "sudo cp /tmp/nginx.conf /etc/nginx/nginx.conf",
       "sudo mkdir -p /etc/nginx/stream.conf.d",
-      "sudo cp /tmp/stream.conf /etc/nginx/stream.conf.d/stream.conf",
+      "sudo cp /tmp/proxy.stream.conf /etc/nginx/stream.conf.d/proxy.stream.conf",
       "sudo nginx -t",
       "sudo systemctl reload nginx",
       "echo 'Nginx installation and configuration completed!'"

@@ -69,3 +69,4 @@ id_dsa
 /legacy/
 /kubernetes/manifests/one/dev/harbor-account-secret.yml
 /ssh-keys/id_ed25519
+/ssh_config

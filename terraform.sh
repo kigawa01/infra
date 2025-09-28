@@ -202,6 +202,9 @@ else
   VAR_FILE_ARG=""
 fi
 
+# Set SSH config path for Terraform to use
+export SSH_CONFIG="./ssh_config"
+
 # Execute the appropriate Terraform command
 case "$COMMAND" in
   init)

@@ -9,6 +9,12 @@ variable "target_host" {
   default     = "k8s4"
 }
 
+variable "nginx_target_host" {
+  description = "Target host for Nginx installation"
+  type        = string
+  default     = "one-sakura"
+}
+
 variable "ssh_user" {
   description = "SSH username for remote connection"
   type        = string
@@ -106,11 +112,11 @@ variable "apply_one_dev_manifests" {
 variable "nginx_enabled" {
   description = "Whether to enable nginx installation and configuration"
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "nginx_server_name" {
   description = "Server name for nginx configuration"
   type        = string
-  default     = "_"
+  default     = "0.0.0.0"
 }
