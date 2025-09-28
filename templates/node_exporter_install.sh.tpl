@@ -99,7 +99,6 @@ if systemctl is-active --quiet node_exporter; then
     log_info "Metrics available at: http://$(hostname -I | awk '{print $1}'):$NODE_EXPORTER_PORT/metrics"
 else
     log_error "Node Exporter failed to start"
-    systemctl status node_exporter
     exit 1
 fi
 
