@@ -70,3 +70,8 @@ id_dsa
 /kubernetes/manifests/one/dev/harbor-account-secret.yml
 /ssh-keys/id_ed25519
 /ssh_config
+# Ignore Gradle project-specific cache directory
+.gradle
+
+# Ignore Gradle build output directory
+build
