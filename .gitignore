@@ -75,3 +75,4 @@ id_dsa
 
 # Ignore Gradle build output directory
 build
+/generated-old/
