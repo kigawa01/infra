@@ -13,7 +13,7 @@ class TerraformRunner {
     }
 
     private val supportedCommands = setOf(
-        "init", "plan", "apply", "destroy", "validate", "fmt", "help"
+        "init", "plan", "apply", "destroy", "validate", "fmt", "help", "deploy"
     )
 
     fun run(args: Array<String>) {
@@ -64,6 +64,13 @@ class TerraformRunner {
     }
 
     private fun executeCommandWithEnvironment(command: String, environment: String, additionalArgs: Array<String>) {
+        // Only allow 'prod' environment
+        if (environment != "prod") {
+            println("${RED}Error:${RESET} Only 'prod' environment is allowed.")
+            println("${BLUE}Available environment:${RESET} prod")
+            exitProcess(1)
+        }
+
         val environmentsDir = File("environments")
         if (!environmentsDir.exists()) {
             environmentsDir.mkdirs()
@@ -72,13 +79,12 @@ class TerraformRunner {
 
         val envDir = File(environmentsDir, environment)
 
-        if (command == "init" && !envDir.exists()) {
+        if ((command == "init" || command == "deploy") && !envDir.exists()) {
             envDir.mkdirs()
             println("${GREEN}Created environment directory:${RESET} environments/$environment")
-        } else if (command != "init" && !envDir.exists()) {
-            println("${RED}Error:${RESET} Environment '$environment' not found. Available environments:")
-            environmentsDir.listFiles()?.forEach { println("  ${it.name}") }
-                ?: println("  No environments found.")
+        } else if (command != "init" && command != "deploy" && !envDir.exists()) {
+            println("${RED}Error:${RESET} Environment '$environment' not found.")
+            println("${BLUE}Available environment:${RESET} prod")
             exitProcess(1)
         }
 
@@ -118,6 +124,32 @@ class TerraformRunner {
             "destroy" -> {
                 val allArgs = arrayOf("terraform", "destroy") + varFileArgs + additionalArgs
                 executeTerraformCommand(*allArgs, processBuilder = processBuilder)
+            }
+            "deploy" -> {
+                println("${BLUE}Starting full deployment pipeline for environment: $environment${RESET}")
+                println()
+
+                // Step 1: Initialize
+                println("${BLUE}Step 1/3: Initializing Terraform${RESET}")
+                val initArgs = arrayOf("terraform", "init")
+                executeTerraformCommand(*initArgs, processBuilder = processBuilder)
+
+                println()
+
+                // Step 2: Plan
+                println("${BLUE}Step 2/3: Creating execution plan${RESET}")
+                val planArgs = arrayOf("terraform", "plan") + varFileArgs + additionalArgs
+                executeTerraformCommand(*planArgs, processBuilder = processBuilder)
+
+                println()
+
+                // Step 3: Apply
+                println("${BLUE}Step 3/3: Applying changes${RESET}")
+                val applyArgs = arrayOf("terraform", "apply") + varFileArgs + additionalArgs
+                executeTerraformCommand(*applyArgs, processBuilder = processBuilder)
+
+                println()
+                println("${GREEN}✅ Deployment completed successfully!${RESET}")
             }
         }
     }
@@ -159,25 +191,26 @@ class TerraformRunner {
         println("  init       - Initialize Terraform working directory")
         println("  plan       - Create an execution plan")
         println("  apply      - Apply the changes required to reach the desired state")
+        println("  deploy     - Full deployment pipeline (init → plan → apply)")
         println("  destroy    - Destroy the Terraform-managed infrastructure")
         println("  validate   - Validate the configuration files")
         println("  fmt        - Reformat configuration files to canonical format")
         println("  help       - Show this help message")
         println()
-        println("${BLUE}Environments:${RESET}")
-        println("  dev        - Development environment")
-        println("  staging    - Staging environment")
-        println("  prod       - Production environment")
+        println("${BLUE}Environment:${RESET}")
+        println("  prod       - Production environment (only allowed)")
         println()
         println("${BLUE}Options:${RESET}")
         println("  -auto-approve  - Skip interactive approval (for apply/destroy)")
         println("  -var-file      - Specify a variable file")
         println()
         println("${BLUE}Examples:${RESET}")
-        println("  java -jar app.jar init dev")
+        println("  java -jar app.jar init prod")
         println("  java -jar app.jar plan prod")
-        println("  java -jar app.jar apply staging")
-        println("  java -jar app.jar destroy dev -auto-approve")
+        println("  java -jar app.jar apply prod")
+        println("  java -jar app.jar deploy prod")
+        println("  java -jar app.jar deploy prod -auto-approve")
+        println("  java -jar app.jar destroy prod -auto-approve")
         println("  java -jar app.jar fmt")
         println("  java -jar app.jar validate")
     }
