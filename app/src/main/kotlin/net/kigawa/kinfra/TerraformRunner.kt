@@ -1,6 +1,7 @@
 package net.kigawa.kinfra
 
 import net.kigawa.kinfra.commands.*
+import net.kigawa.kinfra.domain.Command
 import kotlin.system.exitProcess
 
 class TerraformRunner {

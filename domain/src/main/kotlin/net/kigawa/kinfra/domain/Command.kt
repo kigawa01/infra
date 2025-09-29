@@ -1,4 +1,4 @@
-package net.kigawa.kinfra
+package net.kigawa.kinfra.domain
 
 interface Command {
     fun execute(args: Array<String>): Int

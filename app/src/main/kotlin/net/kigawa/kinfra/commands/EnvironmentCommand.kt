@@ -1,6 +1,6 @@
 package net.kigawa.kinfra.commands
 
-import net.kigawa.kinfra.Command
+import net.kigawa.kinfra.domain.Command
 import java.io.File
 import java.io.IOException
 
