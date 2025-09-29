@@ -10,8 +10,8 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":domain"))
-    implementation(project(":usecase"))
+    implementation(project(":model"))
+    implementation(project(":action"))
     implementation(project(":infrastructure"))
 }
 

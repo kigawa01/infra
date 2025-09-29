@@ -12,6 +12,6 @@ plugins {
 
 rootProject.name = "kotlin-app"
 include("app")
-include("domain")
-include("usecase")
+include("model")
+include("action")
 include("infrastructure")
