@@ -38,7 +38,7 @@ java {
 
 application {
     // Define the main class for the application.
-    mainClass = "org.example.AppKt"
+    mainClass = "net.kigawa.kinfra.AppKt"
 }
 
 tasks.named<Test>("test") {
