@@ -1,36 +1,38 @@
 package net.kigawa.kinfra
 
-import net.kigawa.kinfra.commands.*
 import net.kigawa.kinfra.domain.Command
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+import org.koin.core.qualifier.named
 import kotlin.system.exitProcess
 
-class TerraformRunner {
+class TerraformRunner : KoinComponent {
     companion object {
         const val RESET = "\u001B[0m"
         const val RED = "\u001B[31m"
         const val BLUE = "\u001B[34m"
     }
 
-    private val commands: Map<String, Command>
+    private val fmtCommand: Command by inject(named("fmt"))
+    private val validateCommand: Command by inject(named("validate"))
+    private val initCommand: Command by inject(named("init"))
+    private val planCommand: Command by inject(named("plan"))
+    private val applyCommand: Command by inject(named("apply"))
+    private val destroyCommand: Command by inject(named("destroy"))
+    private val deployCommand: Command by inject(named("deploy"))
+    private val helpCommand: Command by inject(named("help"))
 
-    init {
-        val commandMap = mutableMapOf<String, Command>()
-
-        // Commands that don't require environment
-        commandMap["fmt"] = FormatCommand()
-        commandMap["validate"] = ValidateCommand()
-
-        // Commands that require environment
-        commandMap["init"] = InitCommand()
-        commandMap["plan"] = PlanCommand()
-        commandMap["apply"] = ApplyCommand()
-        commandMap["destroy"] = DestroyCommand()
-        commandMap["deploy"] = DeployCommand()
-
-        // Help command needs access to all commands
-        commandMap["help"] = HelpCommand(commandMap)
-
-        commands = commandMap
+    private val commands: Map<String, Command> by lazy {
+        mapOf(
+            "fmt" to fmtCommand,
+            "validate" to validateCommand,
+            "init" to initCommand,
+            "plan" to planCommand,
+            "apply" to applyCommand,
+            "destroy" to destroyCommand,
+            "deploy" to deployCommand,
+            "help" to helpCommand
+        )
     }
 
     fun run(args: Array<String>) {
