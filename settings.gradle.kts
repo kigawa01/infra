@@ -12,3 +12,4 @@ plugins {
 
 rootProject.name = "kotlin-app"
 include("app")
+include("domain")
