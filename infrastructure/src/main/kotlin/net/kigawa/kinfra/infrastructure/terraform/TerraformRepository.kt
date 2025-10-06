@@ -17,7 +17,16 @@ class TerraformRepositoryImpl(
 ) : TerraformRepository {
 
     override fun getTerraformConfig(environment: Environment): TerraformConfig {
-        val environmentsDir = File("environments")
+        // プロジェクトルートを特定
+        // Gradleから実行された場合、user.dirはappディレクトリを指すので親に移動
+        val currentDir = File(System.getProperty("user.dir"))
+        val projectRoot = if (currentDir.name == "app") {
+            currentDir.parentFile
+        } else {
+            currentDir
+        }
+
+        val environmentsDir = File(projectRoot, "environments")
         val envDir = File(environmentsDir, environment.name)
 
         // 環境ディレクトリを作成
@@ -29,11 +38,12 @@ class TerraformRepositoryImpl(
         val varFile = if (fileRepository.exists(tfvarsFile)) tfvarsFile else null
 
         // SSH設定ファイルのパス
-        val sshConfigPath = fileRepository.getAbsolutePath(File("ssh_config"))
+        val sshConfigFile = File(projectRoot, "ssh_config")
+        val sshConfigPath = fileRepository.getAbsolutePath(sshConfigFile)
 
         return TerraformConfig(
             environment = environment,
-            workingDirectory = envDir,
+            workingDirectory = projectRoot,
             varFile = varFile,
             sshConfigPath = sshConfigPath
         )
