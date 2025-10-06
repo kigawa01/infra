@@ -1,0 +1,17 @@
+# Cloudflare R2 Backend Configuration Example
+# Copy this file to backend.tfvars and fill in your actual values
+# Or create environment-specific files in environments/{env}/backend.tfvars
+
+bucket     = "your-r2-bucket-name"
+key        = "terraform.tfstate"
+region     = "auto"
+endpoint   = "https://<account-id>.r2.cloudflarestorage.com"
+access_key = "your-r2-access-key-id"
+secret_key = "your-r2-secret-access-key"
+
+# To get your R2 credentials:
+# 1. Log in to Cloudflare Dashboard
+# 2. Go to R2 Object Storage
+# 3. Create a bucket (e.g., "kigawa-infra-state")
+# 4. Create an API token with R2 permissions
+# 5. Use the account ID from your Cloudflare dashboard

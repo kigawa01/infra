@@ -14,6 +14,14 @@ terraform {
       version = "~> 2.23"
     }
   }
+
+  backend "s3" {
+    skip_credentials_validation = true
+    skip_region_validation      = true
+    skip_requesting_account_id  = true
+    skip_metadata_api_check     = true
+    skip_s3_checksum            = true
+  }
 }
 
 # Configure the Kubernetes provider (used only if use_ssh_kubectl is false)

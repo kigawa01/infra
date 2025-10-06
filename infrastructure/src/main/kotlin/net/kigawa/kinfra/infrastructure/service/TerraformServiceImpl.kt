@@ -17,13 +17,33 @@ class TerraformServiceImpl(
 
     override fun init(environment: Environment, additionalArgs: Array<String>): CommandResult {
         val config = terraformRepository.getTerraformConfig(environment)
-        val args = arrayOf("terraform", "init") + additionalArgs
+
+        // Check for backend config file
+        val backendConfigArgs = findBackendConfigFile(environment)?.let {
+            arrayOf("-backend-config=$it")
+        } ?: emptyArray()
+
+        val args = arrayOf("terraform", "init") + backendConfigArgs + additionalArgs
 
         return processExecutor.execute(
             args = args,
             workingDir = config.workingDirectory,
             environment = mapOf("SSH_CONFIG" to config.sshConfigPath)
         )
+    }
+
+    private fun findBackendConfigFile(environment: Environment): String? {
+        val envBackendConfig = java.io.File("environments/${environment.name}/backend.tfvars")
+        if (envBackendConfig.exists()) {
+            return envBackendConfig.absolutePath
+        }
+
+        val rootBackendConfig = java.io.File("backend.tfvars")
+        if (rootBackendConfig.exists()) {
+            return rootBackendConfig.absolutePath
+        }
+
+        return null
     }
 
     override fun plan(environment: Environment, additionalArgs: Array<String>): CommandResult {

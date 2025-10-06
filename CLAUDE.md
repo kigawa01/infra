@@ -10,6 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Terraform IaC**: Nginx設定とデプロイ、Prometheus監視、Kubernetesリソース管理
 - **Kotlin CLI App**: Terraformコマンドを実行するJavaアプリケーション（`app/`）
 - **SSH認証**: Bitwardenからの自動SSH鍵取得と管理
+- **Cloudflare R2 Backend**: Terraform state をリモートに保存（オプション）
 
 ## よく使用するコマンド
 
@@ -56,6 +57,22 @@ bw login
 # SSH鍵を取得してプロジェクトに配置
 bw get item "main" --session="..." | jq -r '.sshKey.privateKey' > ./ssh-keys/id_ed25519
 chmod 600 ./ssh-keys/id_ed25519
+```
+
+### Cloudflare R2 Backend 設定
+```bash
+# Backend 設定ファイルを作成（詳細は BACKEND_SETUP.md を参照）
+cat > environments/prod/backend.tfvars << 'EOF'
+bucket     = "kigawa-infra-state"
+key        = "prod/terraform.tfstate"
+region     = "auto"
+endpoint   = "https://<ACCOUNT_ID>.r2.cloudflarestorage.com"
+access_key = "<ACCESS_KEY>"
+secret_key = "<SECRET_KEY>"
+EOF
+
+# R2 backend を使用して初期化
+./terraform.sh init prod
 ```
 
 ## アーキテクチャ概要

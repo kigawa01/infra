@@ -205,11 +205,30 @@ fi
 # Set SSH config path for Terraform to use
 export SSH_CONFIG="./ssh_config"
 
+# Check if backend config file exists for the environment
+BACKEND_CONFIG_FILE="environments/$ENV/backend.tfvars"
+if [ ! -f "$BACKEND_CONFIG_FILE" ]; then
+  BACKEND_CONFIG_FILE="backend.tfvars"
+fi
+
+if [ -f "$BACKEND_CONFIG_FILE" ]; then
+  BACKEND_CONFIG_ARG="-backend-config=$BACKEND_CONFIG_FILE"
+  echo -e "${BLUE}Using backend config:${NC} $BACKEND_CONFIG_FILE"
+else
+  BACKEND_CONFIG_ARG=""
+  echo -e "${YELLOW}Warning:${NC} No backend config file found. Using local state."
+fi
+
 # Execute the appropriate Terraform command
 case "$COMMAND" in
   init)
-    echo -e "${GREEN}Running:${NC} terraform init $*"
-    terraform init "$@"
+    if [ -n "$BACKEND_CONFIG_ARG" ]; then
+      echo -e "${GREEN}Running:${NC} terraform init $BACKEND_CONFIG_ARG $*"
+      terraform init $BACKEND_CONFIG_ARG "$@"
+    else
+      echo -e "${GREEN}Running:${NC} terraform init $*"
+      terraform init "$@"
+    fi
     ;;
   plan)
     if [ -n "$VAR_FILE_ARG" ]; then
