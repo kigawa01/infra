@@ -18,7 +18,7 @@ class DeployCommand : EnvironmentCommand() {
 
         // Step 1: Initialize
         println("${BLUE}Step 1/3: Initializing Terraform${RESET}")
-        val initResult = executeTerraformCommand("terraform", "init")
+        val initResult = executeTerraformCommand("terraform", "init", workingDir = envDir)
         if (initResult != 0) return initResult
 
         println()
@@ -26,7 +26,7 @@ class DeployCommand : EnvironmentCommand() {
         // Step 2: Plan
         println("${BLUE}Step 2/3: Creating execution plan${RESET}")
         val planArgs = arrayOf("terraform", "plan") + varFileArgs + additionalArgs
-        val planResult = executeTerraformCommand(*planArgs)
+        val planResult = executeTerraformCommand(*planArgs, workingDir = envDir)
         if (planResult != 0) return planResult
 
         println()
@@ -34,7 +34,7 @@ class DeployCommand : EnvironmentCommand() {
         // Step 3: Apply
         println("${BLUE}Step 3/3: Applying changes${RESET}")
         val applyArgs = arrayOf("terraform", "apply") + varFileArgs + additionalArgs
-        val applyResult = executeTerraformCommand(*applyArgs)
+        val applyResult = executeTerraformCommand(*applyArgs, workingDir = envDir)
 
         if (applyResult == 0) {
             println()

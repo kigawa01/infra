@@ -55,12 +55,20 @@ abstract class EnvironmentCommand : Command {
         }
     }
 
-    protected fun executeTerraformCommand(vararg args: String): Int {
+    protected fun executeTerraformCommand(vararg args: String, workingDir: File? = null): Int {
         println("${GREEN}Running:${RESET} ${args.joinToString(" ")}")
 
         return try {
             val processBuilder = ProcessBuilder(*args)
-            processBuilder.environment()["SSH_CONFIG"] = "./ssh_config"
+
+            // Set SSH_CONFIG to absolute path from project root
+            val sshConfigPath = File("ssh_config").absolutePath
+            processBuilder.environment()["SSH_CONFIG"] = sshConfigPath
+
+            if (workingDir != null) {
+                processBuilder.directory(workingDir)
+            }
+
             processBuilder.inheritIO()
 
             val process = processBuilder.start()

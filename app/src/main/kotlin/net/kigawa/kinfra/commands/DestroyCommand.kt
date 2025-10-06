@@ -15,7 +15,7 @@ class DestroyCommand : EnvironmentCommand() {
 
         val allArgs = arrayOf("terraform", "destroy") + varFileArgs + additionalArgs
 
-        return executeTerraformCommand(*allArgs)
+        return executeTerraformCommand(*allArgs, workingDir = envDir)
     }
 
     override fun getDescription(): String {
