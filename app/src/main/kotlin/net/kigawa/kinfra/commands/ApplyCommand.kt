@@ -23,7 +23,7 @@ class ApplyCommand : EnvironmentCommand() {
             arrayOf("terraform", "apply") + varFileArgs + additionalArgs
         }
 
-        return executeTerraformCommand(*allArgs, workingDir = envDir)
+        return executeTerraformCommand(*allArgs)
     }
 
     override fun getDescription(): String {

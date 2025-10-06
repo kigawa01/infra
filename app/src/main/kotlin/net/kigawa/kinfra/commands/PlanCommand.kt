@@ -15,7 +15,7 @@ class PlanCommand : EnvironmentCommand() {
 
         val allArgs = arrayOf("terraform", "plan") + varFileArgs + additionalArgs
 
-        return executeTerraformCommand(*allArgs, workingDir = envDir)
+        return executeTerraformCommand(*allArgs)
     }
 
     override fun getDescription(): String {

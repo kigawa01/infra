@@ -10,11 +10,11 @@ class InitCommand : EnvironmentCommand() {
 
         if (!validateEnvironment(environment, isAutoSelected)) return 1
 
-        val envDir = setupEnvironment(environment)
+        setupEnvironment(environment)
 
         val allArgs = arrayOf("terraform", "init") + additionalArgs
 
-        return executeTerraformCommand(*allArgs, workingDir = envDir)
+        return executeTerraformCommand(*allArgs)
     }
 
     override fun getDescription(): String {
