@@ -1,21 +1,32 @@
 package net.kigawa.kinfra.commands
 
-class DestroyCommand : EnvironmentCommand() {
+import net.kigawa.kinfra.action.EnvironmentValidator
+import net.kigawa.kinfra.action.TerraformService
+
+class DestroyCommand(
+    private val terraformService: TerraformService,
+    private val environmentValidator: EnvironmentValidator
+) : EnvironmentCommand() {
     override fun execute(args: Array<String>): Int {
         if (args.isEmpty()) return 1
 
-        val environment = args[0]
+        val environmentName = args[0]
         val isAutoSelected = args.contains("--auto-selected")
         val additionalArgs = args.drop(1).filter { it != "--auto-selected" }.toTypedArray()
 
-        if (!validateEnvironment(environment, isAutoSelected)) return 1
+        val environment = environmentValidator.validate(environmentName)
+        if (environment == null) {
+            println("${RED}Error:${RESET} Only 'prod' environment is allowed.")
+            println("${BLUE}Available environment:${RESET} prod")
+            return 1
+        }
 
-        val envDir = setupEnvironment(environment)
-        val varFileArgs = getVarFileArgs(envDir)
+        if (isAutoSelected) {
+            println("${BLUE}Using environment:${RESET} ${environment.name} (automatically selected)")
+        }
 
-        val allArgs = arrayOf("terraform", "destroy") + varFileArgs + additionalArgs
-
-        return executeTerraformCommand(*allArgs, workingDir = envDir)
+        val result = terraformService.destroy(environment, additionalArgs)
+        return result.exitCode
     }
 
     override fun getDescription(): String {

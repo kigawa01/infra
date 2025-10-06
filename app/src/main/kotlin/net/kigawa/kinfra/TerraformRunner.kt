@@ -50,7 +50,8 @@ class TerraformRunner : KoinComponent {
             exitProcess(1)
         }
 
-        if (!isTerraformInstalled()) {
+        // Skip Terraform check for help command
+        if (commandName != "help" && !isTerraformInstalled()) {
             println("${RED}Error:${RESET} Terraform is not installed or not found in PATH.")
             println("${BLUE}Please install Terraform:${RESET}")
             println("  Ubuntu/Debian: sudo apt-get install terraform")
@@ -83,7 +84,7 @@ class TerraformRunner : KoinComponent {
                 .redirectError(ProcessBuilder.Redirect.DISCARD)
                 .start()
             process.waitFor() == 0
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             false
         }
     }
