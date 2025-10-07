@@ -28,8 +28,10 @@ class BitwardenRepositoryImpl(
 
         return try {
             val status = JsonParser.parseString(result.output).asJsonObject
-            val userEmail = status.get("userEmail")?.asString
-            userEmail != null && userEmail.isNotEmpty()
+            val statusValue = status.get("status")?.asString
+            // "locked" or "unlocked" means logged in
+            // "unauthenticated" means not logged in
+            statusValue == "locked" || statusValue == "unlocked"
         } catch (e: Exception) {
             false
         }
