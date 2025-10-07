@@ -97,26 +97,20 @@ class DeployCommand(
         }
 
         // Get session token from environment variable first
-        var session = System.getenv("BW_SESSION")
+        val session = System.getenv("BW_SESSION")
 
         if (session == null) {
-            println("${BLUE}Unlocking Bitwarden vault...${RESET}")
-            print("Enter your Bitwarden master password: ")
-            val password = System.console()?.readPassword()?.let { String(it) } ?: run {
-                println("${RED}Error:${RESET} Failed to read password")
-                return false
-            }
-
-            session = bitwardenRepository.unlock(password)
-            if (session == null) {
-                println("${RED}Error:${RESET} Failed to unlock Bitwarden vault.")
-                return false
-            }
-
-            println("${GREEN}✓${RESET} Vault unlocked successfully")
-        } else {
-            println("${GREEN}✓${RESET} Using BW_SESSION from environment")
+            println("${RED}Error:${RESET} BW_SESSION environment variable not set.")
+            println()
+            println("${BLUE}Please unlock Bitwarden and set the session:${RESET}")
+            println("  export BW_SESSION=\$(bw unlock --raw)")
+            println()
+            println("${BLUE}Then run the deploy command again:${RESET}")
+            println("  ./gradlew run --args=\"deploy\"")
+            return false
         }
+
+        println("${GREEN}✓${RESET} Using BW_SESSION from environment")
 
         // Get the item (using default name)
         val itemName = "Cloudflare R2 Terraform Backend"
