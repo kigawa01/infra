@@ -13,21 +13,6 @@
 
 ## クイックスタート
 
-### Bashスクリプト方式
-
-```bash
-# 1. 環境を初期化
-./terraform.sh init prod
-
-# 2. 実行計画を確認
-./terraform.sh plan prod
-
-# 3. インフラをデプロイ
-./terraform.sh apply prod
-```
-
-### Kotlin CLI方式（推奨）
-
 ```bash
 # 1. Bitwardenをアンロック
 export BW_SESSION=$(bw unlock --raw)
@@ -43,22 +28,24 @@ export BW_SESSION=$(bw unlock --raw)
 
 ## 主要機能
 
-### 🔧 ハイブリッド実行環境
+### 🔧 Kotlin CLI
 
-2つの方法でTerraformを実行できます：
-
-1. **Bashスクリプト方式** (`terraform.sh`): 従来のshellスクリプト
-2. **Kotlin CLI方式** (`app/`): マルチモジュールJavaアプリケーション（Bitwarden統合付き）
+TerraformをラップしたマルチモジュールJavaアプリケーション：
 
 ```bash
-# Bashスクリプト
-./terraform.sh [コマンド] [環境] [オプション]
-
-# Kotlin CLI
 ./gradlew run --args="[コマンド] [環境]"
 ```
 
-**利用可能なコマンド**: `init`, `plan`, `apply`, `destroy`, `validate`, `fmt`, `deploy`, `setup-r2`
+**利用可能なコマンド**:
+- `init` - Terraform初期化
+- `plan` - 実行計画の作成
+- `apply` - 変更の適用
+- `destroy` - リソースの削除
+- `validate` - 設定の検証
+- `fmt` - フォーマット
+- `deploy` - 完全なデプロイパイプライン（init → plan → apply）
+- `setup-r2` - R2バックエンド設定
+
 **対応環境**: `prod`
 
 ### 🔐 Bitwarden統合による自動設定
@@ -102,7 +89,6 @@ infra/
 ├── CLAUDE.md                 # Claude Code用ガイド
 ├── BACKEND_SETUP.md          # R2バックエンド設定ガイド
 ├── *.tf                      # Terraform設定ファイル
-├── terraform.sh              # Bashスクリプト
 ├── settings.gradle.kts       # Gradleマルチモジュール設定
 ├── app/                      # Kotlin CLIアプリ（エントリーポイント）
 │   └── src/main/kotlin/net/kigawa/kinfra/
@@ -196,13 +182,17 @@ target_host = "k8s4"                 # 192.168.1.120にマッピング
 export BW_SESSION=$(bw unlock --raw)
 ./gradlew run --args="deploy"
 
-# Terraform変数を上書き
-./terraform.sh apply prod -var="nginx_enabled=false"
+# 設定の検証
+./gradlew run --args="validate"
 
-# Bashスクリプトで個別実行
-./terraform.sh validate
-./terraform.sh fmt
-./terraform.sh plan prod
+# フォーマット
+./gradlew run --args="fmt"
+
+# 実行計画の確認
+./gradlew run --args="plan prod"
+
+# Terraform変数を上書き（Terraformのオプションをそのまま渡せる）
+./gradlew run --args="apply prod -var=nginx_enabled=false"
 ```
 
 ## セキュリティ注意事項

@@ -16,14 +16,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Terraform関連
 ```bash
-# Terraformスクリプト経由
-./terraform.sh init prod
-./terraform.sh plan prod
-./terraform.sh apply prod
-./terraform.sh validate
-./terraform.sh fmt
+# 完全なデプロイパイプライン（推奨）
+export BW_SESSION=$(bw unlock --raw)
+./gradlew run --args="deploy"
 
-# Kotlin アプリケーション経由
+# 個別コマンド
 ./gradlew run --args="init prod"
 ./gradlew run --args="plan prod"
 ./gradlew run --args="apply prod"
@@ -67,7 +64,7 @@ DeployコマンドはBitwardenから自動的にR2認証情報を取得します
 # Bitwardenにアイテムを作成（初回のみ）
 ./gradlew run --args="setup-r2"
 
-# または、BW_SESSION環境変数を設定して自動実行
+# BW_SESSION環境変数を設定して自動実行
 export BW_SESSION=$(bw unlock --raw)
 ./gradlew run --args="deploy"
 ```
@@ -79,18 +76,14 @@ export BW_SESSION=$(bw unlock --raw)
 
 deployコマンドは以下を自動実行：
 1. backend.tfvarsの存在チェック（プレースホルダー検出）
-2. Bitwardenから認証情報を取得（BW_SESSION環境変数またはパスワード入力）
+2. Bitwardenから認証情報を取得（BW_SESSION環境変数が必須）
 3. backend.tfvarsを自動生成
 4. terraform init → plan → apply を順次実行
 
 ## アーキテクチャ概要
 
-### ハイブリッド実行環境
-このプロジェクトは2つの方法でTerraformを実行できます：
-1. **Bashスクリプト方式** (`terraform.sh`): 既存の shell スクリプト
-2. **Kotlin CLI方式** (`app/`): 新しく実装されたJavaアプリケーション
-
-両方の実行方式は同じ機能を提供し、同じ環境設定ファイルを使用します。
+### Kotlin CLI アプリケーション
+Terraformをラップしたマルチモジュールアプリケーション。Bitwarden統合により、R2バックエンドの認証情報を自動取得します。
 
 ### Kotlin CLI アプリケーション構造（マルチモジュール）
 
@@ -135,9 +128,10 @@ Terraformコードは以下の論理名を物理IPアドレスにマッピング
 ## 重要なパターン
 
 ### 環境変数ファイルの処理
-- 両実行方式とも `environments/{env}/terraform.tfvars` を自動検出
+- `environments/{env}/terraform.tfvars` を自動検出
 - SSH設定は環境変数 `SSH_CONFIG=./ssh_config` で統一
 - Plan ファイル適用時は変数ファイル不要
+- `BW_SESSION` 環境変数でBitwarden認証
 
 ### Kotlin アプリケーション設計パターン
 
