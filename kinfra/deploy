@@ -7,6 +7,6 @@ BIN_DIR=$(cd "$(dirname "${BASH_SOURCE:-$0}")"; pwd)
 main() {
   cd "$BIN_DIR/.."
   ./gradlew build
-  java -jar build/libs/kinfra-deploy.jar deploy
+  java -jar app/build/libs/app.jar deploy
 }
 main
