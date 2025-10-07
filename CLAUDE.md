@@ -46,35 +46,108 @@ export BW_SESSION=$(bw unlock --raw)
 app/build/install/app/bin/app help
 ```
 
-### Bitwarden SSH鍵取得
-```bash
-# Bitwardenにログイン
-bw login
+### Bitwarden初期設定と認証
 
-# SSH鍵を取得してプロジェクトに配置
-bw get item "main" --session="..." | jq -r '.sshKey.privateKey' > ./ssh-keys/id_ed25519
+#### 1. Bitwarden CLIのインストール
+```bash
+# macOS (Homebrew)
+brew install bitwarden-cli
+
+# または npm経由
+npm install -g @bitwarden/cli
+
+# インストール確認
+bw --version
+```
+
+#### 2. Bitwardenへのログインとセッション管理
+```bash
+# 初回ログイン（メールアドレスを入力）
+bw login your-email@example.com
+
+# ログイン済みか確認
+bw login --check
+
+# Vaultのアンロック（セッショントークンを取得）
+bw unlock
+# または環境変数に直接設定
+export BW_SESSION=$(bw unlock --raw)
+
+# セッション状態の確認
+bw status | jq
+```
+
+#### 3. SSH鍵の保存と取得
+
+**Bitwardenへの保存（初回のみ）**:
+```bash
+# 既存のSSH秘密鍵をBitwardenに保存
+# 1. Bitwarden Webアプリまたはデスクトップアプリでアイテムを作成
+# 2. アイテムタイプ: "SSH Key"
+# 3. アイテム名: "main" （または任意の名前）
+# 4. Private Key フィールドに秘密鍵の内容を貼り付け
+
+# または、CLI経由で作成
+bw get template item | jq '.type = 2 | .secureNote.type = 0 | .name = "main" | .notes = "SSH key for infrastructure"' | bw encode | bw create item
+
+# アイテムの確認
+bw list items --search "main" | jq
+```
+
+**プロジェクトへの取得と配置**:
+```bash
+# SSH鍵をBitwardenから取得してプロジェクトに配置
+bw get item "main" | jq -r '.notes' > ./ssh-keys/id_ed25519
+# または、sshKey フィールドが存在する場合
+bw get item "main" | jq -r '.sshKey.privateKey' > ./ssh-keys/id_ed25519
+
+# パーミッション設定（重要）
 chmod 600 ./ssh-keys/id_ed25519
+
+# 公開鍵も必要な場合
+ssh-keygen -y -f ./ssh-keys/id_ed25519 > ./ssh-keys/id_ed25519.pub
+```
+
+**セッション管理のベストプラクティス**:
+```bash
+# セッショントークンを環境変数に保存（推奨）
+export BW_SESSION=$(bw unlock --raw)
+
+# セッション付きでコマンド実行
+bw list items --session "$BW_SESSION"
+
+# セッションのロック（作業完了時）
+bw lock
 ```
 
 ### Cloudflare R2 Backend 自動設定（Bitwarden統合）
 
-DeployコマンドはBitwardenから自動的にR2認証情報を取得します：
+#### 1. 準備と設定
 
+**Bitwardenへのアイテム作成（初回のみ）**:
 ```bash
-# Bitwardenにアイテムを作成（初回のみ）
-./gradlew run --args="setup-r2"
+# 1. Bitwarden WebアプリまたはデスクトップアプリでR2認証情報のアイテムを作成
+# 2. アイテム名: Cloudflare R2 Terraform Backend
+# 3. カスタムフィールドを追加:
+#    - access_key: R2 Access Key ID
+#    - secret_key: R2 Secret Access Key
+#    - account_id: Cloudflare Account ID
+#    - bucket_name: kigawa-infra-state
 
+# セットアップコマンドを実行してbackend.tfvarsを生成
+./gradlew run --args="setup-r2"
+```
+
+#### 2. デプロイ実行
+
+**推奨：deployコマンドで一括実行**:
+```bash
 # BW_SESSION環境変数を設定して自動実行
 export BW_SESSION=$(bw unlock --raw)
 ./gradlew run --args="deploy"
 ```
 
-**Bitwardenアイテム要件**:
-- アイテム名: `Cloudflare R2 Terraform Backend`
-- 必須フィールド: `access_key`, `secret_key`, `account_id`
-- オプションフィールド: `bucket_name` (デフォルト: `kigawa-infra-state`)
-
-deployコマンドは以下を自動実行：
+**deployコマンドの動作フロー**:
 1. backend.tfvarsの存在チェック（プレースホルダー検出）
 2. Bitwardenから認証情報を取得（BW_SESSION環境変数が必須）
 3. backend.tfvarsを自動生成
