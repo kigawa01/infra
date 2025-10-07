@@ -16,14 +16,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Terraform関連
 ```bash
-# Terraformスクリプト経由
-./terraform.sh init prod
-./terraform.sh plan prod
-./terraform.sh apply prod
-./terraform.sh validate
-./terraform.sh fmt
+# 完全なデプロイパイプライン（推奨）
+export BW_SESSION=$(bw unlock --raw)
+./gradlew run --args="deploy"
 
-# Kotlin アプリケーション経由
+# 個別コマンド
 ./gradlew run --args="init prod"
 ./gradlew run --args="plan prod"
 ./gradlew run --args="apply prod"
@@ -125,130 +122,41 @@ bw lock
 
 ### Cloudflare R2 Backend 自動設定（Bitwarden統合）
 
-#### 1. R2認証情報の準備
+#### 1. 準備と設定
 
-**Cloudflare側の準備**:
+**Bitwardenへのアイテム作成（初回のみ）**:
 ```bash
-# 1. Cloudflare ダッシュボードにログイン
-# 2. R2 → Create bucket → バケット名を入力（例: kigawa-infra-state）
-# 3. R2 → Manage R2 API Tokens → Create API Token
-#    - Token name: Terraform Backend
-#    - Permissions: Object Read & Write
-#    - Apply to specific buckets: 作成したバケット名
-# 4. トークン作成後、以下の情報を控える:
-#    - Access Key ID
-#    - Secret Access Key
-#    - Account ID (ダッシュボードのURLから取得: dash.cloudflare.com/<account_id>/r2)
+# 1. Bitwarden WebアプリまたはデスクトップアプリでR2認証情報のアイテムを作成
+# 2. アイテム名: Cloudflare R2 Terraform Backend
+# 3. カスタムフィールドを追加:
+#    - access_key: R2 Access Key ID
+#    - secret_key: R2 Secret Access Key
+#    - account_id: Cloudflare Account ID
+#    - bucket_name: kigawa-infra-state
+
+# セットアップコマンドを実行してbackend.tfvarsを生成
+./gradlew run --args="setup-r2"
 ```
 
-#### 2. Bitwardenへの認証情報登録
+#### 2. デプロイ実行
 
-**方法1: Webアプリ/デスクトップアプリ経由（推奨）**:
-```
-1. Bitwardenアプリで新規アイテムを作成
-2. アイテムタイプ: Login
-3. Name: Cloudflare R2 Terraform Backend
-4. Custom fieldsを追加:
-   - access_key (type: text): <Access Key ID>
-   - secret_key (type: password): <Secret Access Key>
-   - account_id (type: text): <Account ID>
-   - bucket_name (type: text): kigawa-infra-state (オプション)
-```
-
-**方法2: CLI経由**:
+**推奨：deployコマンドで一括実行**:
 ```bash
-# テンプレートを取得して編集
-bw get template item | jq '
-  .type = 1 |
-  .name = "Cloudflare R2 Terraform Backend" |
-  .login.username = "terraform" |
-  .login.password = "dummy" |
-  .fields = [
-    {name: "access_key", value: "YOUR_ACCESS_KEY", type: 0},
-    {name: "secret_key", value: "YOUR_SECRET_KEY", type: 1},
-    {name: "account_id", value: "YOUR_ACCOUNT_ID", type: 0},
-    {name: "bucket_name", value: "kigawa-infra-state", type: 0}
-  ]
-' | bw encode | bw create item
-
-# 登録確認
-bw list items --search "Cloudflare R2" | jq
-```
-
-#### 3. 自動デプロイの実行
-
-**基本的な使い方**:
-```bash
-# セッションを環境変数に設定
+# BW_SESSION環境変数を設定して自動実行
 export BW_SESSION=$(bw unlock --raw)
-
-# deployコマンドで一括実行
-./gradlew run --args="deploy prod"
+./gradlew run --args="deploy"
 ```
 
 **deployコマンドの動作フロー**:
-1. `backend.tfvars`の存在チェック（プレースホルダー検出）
-2. Bitwardenから認証情報を取得（BW_SESSION環境変数またはパスワード入力）
-3. `backend.tfvars`を自動生成
-4. `terraform init` → `plan` → `apply` を順次実行
-
-**手動設定（deployコマンドを使わない場合）**:
-```bash
-# setup-r2コマンドでbackend.tfvarsのみ生成
-./gradlew run --args="setup-r2"
-
-# 生成されたファイルを確認
-cat backend.tfvars
-
-# Terraformコマンドを個別実行
-./gradlew run --args="init prod"
-./gradlew run --args="plan prod"
-./gradlew run --args="apply prod"
-```
-
-#### 4. トラブルシューティング
-
-**Bitwardenアイテムが見つからない**:
-```bash
-# アイテム一覧を確認
-bw list items | jq '.[] | {id, name}'
-
-# 特定の名前で検索
-bw list items --search "R2" | jq
-
-# フィールドの確認
-bw get item "Cloudflare R2 Terraform Backend" | jq '.fields'
-```
-
-**backend.tfvarsが生成されない**:
-```bash
-# Bitwardenのログイン状態を確認
-bw status | jq
-
-# セッションが有効か確認
-bw list items --session "$BW_SESSION" | jq 'length'
-
-# 手動でセッションを再取得
-export BW_SESSION=$(bw unlock --raw)
-```
-
-**Terraform initが失敗する**:
-```bash
-# backend.tfvarsの内容を確認（プレースホルダーが残っていないか）
-cat backend.tfvars
-
-# 認証情報が正しいか手動テスト
-# (Cloudflare R2のAPIエンドポイントにアクセステスト)
-```
+1. backend.tfvarsの存在チェック（プレースホルダー検出）
+2. Bitwardenから認証情報を取得（BW_SESSION環境変数が必須）
+3. backend.tfvarsを自動生成
+4. terraform init → plan → apply を順次実行
 
 ## アーキテクチャ概要
 
-### ハイブリッド実行環境
-このプロジェクトは2つの方法でTerraformを実行できます：
-1. **Bashスクリプト方式** (`terraform.sh`): 既存の shell スクリプト
-2. **Kotlin CLI方式** (`app/`): 新しく実装されたJavaアプリケーション
-
-両方の実行方式は同じ機能を提供し、同じ環境設定ファイルを使用します。
+### Kotlin CLI アプリケーション
+Terraformをラップしたマルチモジュールアプリケーション。Bitwarden統合により、R2バックエンドの認証情報を自動取得します。
 
 ### Kotlin CLI アプリケーション構造（マルチモジュール）
 
@@ -293,9 +201,10 @@ Terraformコードは以下の論理名を物理IPアドレスにマッピング
 ## 重要なパターン
 
 ### 環境変数ファイルの処理
-- 両実行方式とも `environments/{env}/terraform.tfvars` を自動検出
+- `environments/{env}/terraform.tfvars` を自動検出
 - SSH設定は環境変数 `SSH_CONFIG=./ssh_config` で統一
 - Plan ファイル適用時は変数ファイル不要
+- `BW_SESSION` 環境変数でBitwarden認証
 
 ### Kotlin アプリケーション設計パターン
 
