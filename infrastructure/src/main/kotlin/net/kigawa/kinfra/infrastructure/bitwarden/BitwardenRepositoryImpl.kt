@@ -14,7 +14,7 @@ class BitwardenRepositoryImpl(
 
     override fun isInstalled(): Boolean {
         val result = processExecutor.executeWithOutput(
-            arrayOf("command", "-v", "bw")
+            arrayOf("bw", "--version")
         )
         return result.exitCode == 0
     }

@@ -59,21 +59,29 @@ bw get item "main" --session="..." | jq -r '.sshKey.privateKey' > ./ssh-keys/id_
 chmod 600 ./ssh-keys/id_ed25519
 ```
 
-### Cloudflare R2 Backend 設定
-```bash
-# Backend 設定ファイルを作成（詳細は BACKEND_SETUP.md を参照）
-cat > environments/prod/backend.tfvars << 'EOF'
-bucket     = "kigawa-infra-state"
-key        = "prod/terraform.tfstate"
-region     = "auto"
-endpoint   = "https://<ACCOUNT_ID>.r2.cloudflarestorage.com"
-access_key = "<ACCESS_KEY>"
-secret_key = "<SECRET_KEY>"
-EOF
+### Cloudflare R2 Backend 自動設定（Bitwarden統合）
 
-# R2 backend を使用して初期化
-./terraform.sh init prod
+DeployコマンドはBitwardenから自動的にR2認証情報を取得します：
+
+```bash
+# Bitwardenにアイテムを作成（初回のみ）
+./gradlew run --args="setup-r2"
+
+# または、BW_SESSION環境変数を設定して自動実行
+export BW_SESSION=$(bw unlock --raw)
+./gradlew run --args="deploy"
 ```
+
+**Bitwardenアイテム要件**:
+- アイテム名: `Cloudflare R2 Terraform Backend`
+- 必須フィールド: `access_key`, `secret_key`, `account_id`
+- オプションフィールド: `bucket_name` (デフォルト: `kigawa-infra-state`)
+
+deployコマンドは以下を自動実行：
+1. backend.tfvarsの存在チェック（プレースホルダー検出）
+2. Bitwardenから認証情報を取得（BW_SESSION環境変数またはパスワード入力）
+3. backend.tfvarsを自動生成
+4. terraform init → plan → apply を順次実行
 
 ## アーキテクチャ概要
 
@@ -84,16 +92,31 @@ EOF
 
 両方の実行方式は同じ機能を提供し、同じ環境設定ファイルを使用します。
 
-### Kotlin CLI アプリケーション構造
-```
-app/
-├── build.gradle.kts                              # Gradle ビルド設定
-├── src/main/kotlin/net/kigawa/kinfra/
-│   ├── App.kt                                   # エントリーポイント
-│   └── TerraformRunner.kt                       # メインロジック
-└── src/test/kotlin/net/kigawa/kinfra/
-    └── AppTest.kt                               # テスト
-```
+### Kotlin CLI アプリケーション構造（マルチモジュール）
+
+プロジェクトは4つのGradleモジュールで構成されています：
+
+1. **app/** - エントリーポイントとコマンド実装
+   - `commands/` - 各Terraformコマンドの実装（InitCommand, PlanCommand, ApplyCommand, DeployCommandなど）
+   - `TerraformRunner.kt` - コマンドディスパッチャー
+   - `di/AppModule.kt` - Koin依存性注入設定
+
+2. **model/** - ドメインモデル
+   - `domain/` パッケージに配置（実際のディレクトリは`model/src/main/kotlin/net/kigawa/kinfra/domain/`）
+   - Command, Environment, TerraformConfig, R2BackendConfig, BitwardenItemなど
+
+3. **action/** - ビジネスロジック層
+   - TerraformService - Terraform操作の抽象化
+   - EnvironmentValidator - 環境検証
+
+4. **infrastructure/** - インフラストラクチャ層
+   - `bitwarden/` - Bitwarden CLI統合
+   - `process/` - プロセス実行（ProcessExecutor）
+   - `service/` - TerraformServiceの実装
+   - `terraform/` - Terraform設定管理
+   - `validator/` - バリデーター実装
+
+依存関係: `app → action, infrastructure → model`
 
 ### Terraform インフラ構造
 - **メインTerraform設定** (`*.tf`): SSH経由でのnginx・Node Exporterデプロイ
@@ -117,10 +140,26 @@ Terraformコードは以下の論理名を物理IPアドレスにマッピング
 - Plan ファイル適用時は変数ファイル不要
 
 ### Kotlin アプリケーション設計パターン
-- **TerraformRunner**: コマンド実行とプロセス管理
-- **Color output**: ANSI エスケープコードによる色付きコンソール出力
-- **Error handling**: Terraform未インストール検知、適切な終了コード
-- **Process delegation**: ProcessBuilder経由でTerraformプロセスを起動
+
+**依存性注入（Koin）**:
+- すべてのコマンドとサービスはKoinで管理
+- `AppModule.kt`で依存関係を定義
+- `single<T>`でシングルトン、`named("command-name")`で名前付きバインディング
+
+**コマンドパターン**:
+- `Command`インターフェース: `execute()`, `requiresEnvironment()`, `getDescription()`
+- `EnvironmentCommand`抽象クラス: 環境が必要なコマンドの基底クラス（共通の色定数を提供）
+- 各コマンド実装: InitCommand, PlanCommand, ApplyCommand, DeployCommand等
+
+**プロセス実行**:
+- `ProcessExecutor`インターフェース: `execute()`, `executeWithOutput()`, `checkInstalled()`
+- `CommandResult` vs `ExecutionResult`: 前者はexitCodeのみ、後者はoutput/errorも含む
+- ProcessBuilder経由でTerraformプロセスを起動、inheritIO()で標準出力継承
+
+**Bitwarden統合**:
+- `BitwardenRepository`: CLI経由でBitwardenとやり取り
+- `isInstalled()`, `isLoggedIn()`, `unlock()`, `getItem()`, `listItems()`
+- JSON解析にGsonを使用（kotlinx-serializationではなく）
 
 ### SSH鍵管理パターン
 ```hcl
@@ -167,8 +206,12 @@ private_key = var.ssh_key_path != "" ? file(var.ssh_key_path) : file("./ssh-keys
 
 ### Kotlin アプリケーション開発
 ```bash
-# プロジェクトのビルドとテスト
+# プロジェクトのビルドとテスト（全モジュール）
 ./gradlew build
+
+# 特定モジュールのビルド
+./gradlew :app:build
+./gradlew :infrastructure:build
 
 # 単一テストの実行
 ./gradlew test --tests AppTest.terraformRunnerCanBeCreated
@@ -180,4 +223,22 @@ private_key = var.ssh_key_path != "" ? file(var.ssh_key_path) : file("./ssh-keys
 ./gradlew installDist
 app/build/install/app/bin/app help
 ```
+
+## 重要な実装上の注意点
+
+### パッケージ構造の注意
+- `model`モジュールは`net.kigawa.kinfra.domain`パッケージを使用（ディレクトリは`model/src/main/kotlin/net/kigawa/kinfra/domain/`）
+- 他のモジュールからは`import net.kigawa.kinfra.domain.*`でインポート
+
+### 既存コードとの互換性
+- `ProcessExecutor`インターフェースは既に`infrastructure`モジュールに存在
+- 新しい実装を追加する場合は、既存のシグネチャ（`args: Array<String>`, `workingDir: File?`等）を維持
+- `executeWithOutput()`は出力取得用、`execute()`は標準出力継承用
+
+### 依存性注入の追加
+新しいコマンドやサービスを追加する場合：
+1. インターフェース/クラスを適切なモジュールに配置
+2. `di/AppModule.kt`にバインディングを追加
+3. コンストラクタインジェクションを使用
+
 - 日本語を使う
