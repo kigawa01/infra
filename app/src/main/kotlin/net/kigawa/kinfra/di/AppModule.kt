@@ -14,6 +14,8 @@ import net.kigawa.kinfra.infrastructure.terraform.TerraformRepository
 import net.kigawa.kinfra.infrastructure.terraform.TerraformRepositoryImpl
 import net.kigawa.kinfra.infrastructure.bitwarden.BitwardenRepository
 import net.kigawa.kinfra.infrastructure.bitwarden.BitwardenRepositoryImpl
+import net.kigawa.kinfra.infrastructure.bitwarden.BitwardenSecretManagerRepository
+import net.kigawa.kinfra.infrastructure.bitwarden.BitwardenSecretManagerRepositoryImpl
 import net.kigawa.kinfra.infrastructure.validator.EnvironmentValidatorImpl
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
@@ -27,6 +29,16 @@ val appModule = module {
     single<TerraformService> { TerraformServiceImpl(get(), get()) }
     single<BitwardenRepository> { BitwardenRepositoryImpl(get()) }
 
+    // Bitwarden Secret Manager (環境変数 BWS_ACCESS_TOKEN がある場合のみ初期化)
+    val bwsAccessToken = System.getenv("BWS_ACCESS_TOKEN")
+    val hasBwsToken = bwsAccessToken != null && bwsAccessToken.isNotBlank()
+
+    if (hasBwsToken) {
+        single<BitwardenSecretManagerRepository> {
+            BitwardenSecretManagerRepositoryImpl(bwsAccessToken!!, get())
+        }
+    }
+
     // Presentation layer
     single<TerraformRunner> { TerraformRunner() }
 
@@ -35,6 +47,11 @@ val appModule = module {
     single<Command>(named("validate")) { ValidateCommand(get()) }
     single<Command>(named("setup-r2")) { SetupR2Command(get()) }
 
+    // SDK-based commands (only if BWS_ACCESS_TOKEN is available)
+    if (hasBwsToken) {
+        single<Command>(named("setup-r2-sdk")) { SetupR2CommandWithSDK(get()) }
+    }
+
     // Commands that require environment
     single<Command>(named("init")) { InitCommand(get(), get()) }
     single<Command>(named("plan")) { PlanCommand(get(), get()) }
@@ -42,9 +59,14 @@ val appModule = module {
     single<Command>(named("destroy")) { DestroyCommand(get(), get()) }
     single<Command>(named("deploy")) { DeployCommand(get(), get(), get()) }
 
+    // SDK-based deploy (only if BWS_ACCESS_TOKEN is available)
+    if (hasBwsToken) {
+        single<Command>(named("deploy-sdk")) { DeployCommandWithSDK(get(), get(), get()) }
+    }
+
     // Help command needs access to all commands
     single<Command>(named("help")) {
-        val commandMap = mapOf(
+        val commandMap = mutableMapOf(
             "fmt" to get<Command>(named("fmt")),
             "validate" to get<Command>(named("validate")),
             "setup-r2" to get<Command>(named("setup-r2")),
@@ -54,6 +76,13 @@ val appModule = module {
             "destroy" to get<Command>(named("destroy")),
             "deploy" to get<Command>(named("deploy"))
         )
+
+        // SDK-based commands (only if BWS_ACCESS_TOKEN is available)
+        if (hasBwsToken) {
+            commandMap["setup-r2-sdk"] = get<Command>(named("setup-r2-sdk"))
+            commandMap["deploy-sdk"] = get<Command>(named("deploy-sdk"))
+        }
+
         HelpCommand(commandMap)
     }
 }
