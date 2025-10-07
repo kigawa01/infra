@@ -4,154 +4,50 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## プロジェクト概要
 
-このプロジェクトは本番環境向けのインフラストラクチャ管理を行うTerraformベースのInfrastructure as Code (IaC) プロジェクトと、Terraformを実行するKotlin CLIアプリケーションから構成されています。
-
-### 主要コンポーネント
-- **Terraform IaC**: Nginx設定とデプロイ、Prometheus監視、Kubernetesリソース管理
-- **Kotlin CLI App**: Terraformコマンドを実行するJavaアプリケーション（`app/`）
-- **SSH認証**: Bitwardenからの自動SSH鍵取得と管理
-- **Cloudflare R2 Backend**: Terraform state をリモートに保存（オプション）
+Terraformを実行するKotlin CLIアプリケーション（マルチモジュール）。Bitwarden統合により、R2バックエンドの認証情報とSSH鍵を自動取得します。
 
 ## よく使用するコマンド
 
-### Terraform関連
+### アプリケーション開発
+```bash
+# ビルドとテスト
+./gradlew build
+./gradlew test
+
+# アプリケーション実行
+./gradlew run --args="help"
+
+# 特定モジュールのビルド
+./gradlew :app:build
+./gradlew :infrastructure:build
+```
+
+### Terraformデプロイ
 ```bash
 # 完全なデプロイパイプライン（推奨）
 export BW_SESSION=$(bw unlock --raw)
-./gradlew run --args="deploy"
+./gradlew run --args="deploy prod"
+
+# または、bws CLI使用（BWS_ACCESS_TOKENが設定されている場合）
+export BWS_ACCESS_TOKEN="your-token"
+./gradlew run --args="deploy-sdk prod"
 
 # 個別コマンド
 ./gradlew run --args="init prod"
 ./gradlew run --args="plan prod"
 ./gradlew run --args="apply prod"
-./gradlew run --args="validate"
-./gradlew run --args="fmt"
 ```
 
-### Kotlin アプリケーション開発
+### Cloudflare R2 Backend設定
 ```bash
-# アプリケーションのビルド
-./gradlew build
-
-# テスト実行
-./gradlew test
-
-# アプリケーション実行（gradleラッパー経由）
-./gradlew run --args="help"
-
-# 配布用パッケージの作成
-./gradlew installDist
-
-# インストール済みスクリプトの実行
-app/build/install/app/bin/app help
-```
-
-### Bitwarden初期設定と認証
-
-#### 1. Bitwarden CLIのインストール
-```bash
-# macOS (Homebrew)
-brew install bitwarden-cli
-
-# または npm経由
-npm install -g @bitwarden/cli
-
-# インストール確認
-bw --version
-```
-
-#### 2. Bitwardenへのログインとセッション管理
-```bash
-# 初回ログイン（メールアドレスを入力）
-bw login your-email@example.com
-
-# ログイン済みか確認
-bw login --check
-
-# Vaultのアンロック（セッショントークンを取得）
-bw unlock
-# または環境変数に直接設定
+# bw CLI使用（従来方式）
 export BW_SESSION=$(bw unlock --raw)
-
-# セッション状態の確認
-bw status | jq
-```
-
-#### 3. SSH鍵の保存と取得
-
-**Bitwardenへの保存（初回のみ）**:
-```bash
-# 既存のSSH秘密鍵をBitwardenに保存
-# 1. Bitwarden Webアプリまたはデスクトップアプリでアイテムを作成
-# 2. アイテムタイプ: "SSH Key"
-# 3. アイテム名: "main" （または任意の名前）
-# 4. Private Key フィールドに秘密鍵の内容を貼り付け
-
-# または、CLI経由で作成
-bw get template item | jq '.type = 2 | .secureNote.type = 0 | .name = "main" | .notes = "SSH key for infrastructure"' | bw encode | bw create item
-
-# アイテムの確認
-bw list items --search "main" | jq
-```
-
-**プロジェクトへの取得と配置**:
-```bash
-# SSH鍵をBitwardenから取得してプロジェクトに配置
-bw get item "main" | jq -r '.notes' > ./ssh-keys/id_ed25519
-# または、sshKey フィールドが存在する場合
-bw get item "main" | jq -r '.sshKey.privateKey' > ./ssh-keys/id_ed25519
-
-# パーミッション設定（重要）
-chmod 600 ./ssh-keys/id_ed25519
-
-# 公開鍵も必要な場合
-ssh-keygen -y -f ./ssh-keys/id_ed25519 > ./ssh-keys/id_ed25519.pub
-```
-
-**セッション管理のベストプラクティス**:
-```bash
-# セッショントークンを環境変数に保存（推奨）
-export BW_SESSION=$(bw unlock --raw)
-
-# セッション付きでコマンド実行
-bw list items --session "$BW_SESSION"
-
-# セッションのロック（作業完了時）
-bw lock
-```
-
-### Cloudflare R2 Backend 自動設定（Bitwarden統合）
-
-#### 1. 準備と設定
-
-**Bitwardenへのアイテム作成（初回のみ）**:
-```bash
-# 1. Bitwarden WebアプリまたはデスクトップアプリでR2認証情報のアイテムを作成
-# 2. アイテム名: Cloudflare R2 Terraform Backend
-# 3. カスタムフィールドを追加:
-#    - access_key: R2 Access Key ID
-#    - secret_key: R2 Secret Access Key
-#    - account_id: Cloudflare Account ID
-#    - bucket_name: kigawa-infra-state
-
-# セットアップコマンドを実行してbackend.tfvarsを生成
 ./gradlew run --args="setup-r2"
+
+# bws CLI使用（SDK方式、自動インストール）
+export BWS_ACCESS_TOKEN="your-token"
+./gradlew run --args="setup-r2-sdk"
 ```
-
-#### 2. デプロイ実行
-
-**推奨：deployコマンドで一括実行**:
-```bash
-# BW_SESSION環境変数を設定して自動実行
-export BW_SESSION=$(bw unlock --raw)
-./gradlew run --args="deploy"
-```
-
-**deployコマンドの動作フロー**:
-1. backend.tfvarsの存在チェック（プレースホルダー検出）
-2. Bitwardenから認証情報を取得（BW_SESSION環境変数が必須）
-3. backend.tfvarsを自動生成
-4. terraform init → plan → apply を順次実行
 
 ## アーキテクチャ概要
 
