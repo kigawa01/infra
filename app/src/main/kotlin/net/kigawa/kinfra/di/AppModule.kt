@@ -40,7 +40,7 @@ val appModule = module {
     single<Command>(named("plan")) { PlanCommand(get(), get()) }
     single<Command>(named("apply")) { ApplyCommand(get(), get()) }
     single<Command>(named("destroy")) { DestroyCommand(get(), get()) }
-    single<Command>(named("deploy")) { DeployCommand(get(), get()) }
+    single<Command>(named("deploy")) { DeployCommand(get(), get(), get()) }
 
     // Help command needs access to all commands
     single<Command>(named("help")) {

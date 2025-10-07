@@ -1,57 +1,62 @@
 package net.kigawa.kinfra.infrastructure.bitwarden
 
-import kotlinx.serialization.json.*
-import net.kigawa.kinfra.domain.BitwardenField
-import net.kigawa.kinfra.domain.BitwardenItem
+import com.google.gson.Gson
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import net.kigawa.kinfra.infrastructure.process.ProcessExecutor
-import java.io.File
+import net.kigawa.kinfra.model.BitwardenItem
 
 class BitwardenRepositoryImpl(
     private val processExecutor: ProcessExecutor
 ) : BitwardenRepository {
 
+    private val gson = Gson()
+
     override fun isInstalled(): Boolean {
-        val result = processExecutor.executeWithOutput(args = arrayOf("command", "-v", "bw"))
+        val result = processExecutor.executeWithOutput(
+            arrayOf("command", "-v", "bw")
+        )
         return result.exitCode == 0
     }
 
     override fun isLoggedIn(): Boolean {
-        val result = processExecutor.executeWithOutput(args = arrayOf("bw", "login", "--check"))
-        return result.exitCode == 0
+        val result = processExecutor.executeWithOutput(
+            arrayOf("bw", "status")
+        )
+
+        if (result.exitCode != 0) return false
+
+        return try {
+            val status = JsonParser.parseString(result.output).asJsonObject
+            val userEmail = status.get("userEmail")?.asString
+            userEmail != null && userEmail.isNotEmpty()
+        } catch (e: Exception) {
+            false
+        }
     }
 
     override fun unlock(password: String): String? {
-        // Create a temporary file with password
-        val passwordFile = File.createTempFile("bw_password", ".tmp")
-        try {
-            passwordFile.writeText(password)
-            passwordFile.setReadable(true, true)  // Owner read only
+        val result = processExecutor.executeWithOutput(
+            arrayOf("bw", "unlock", password, "--raw")
+        )
 
-            val result = processExecutor.executeWithOutput(
-                args = arrayOf("sh", "-c", "cat ${passwordFile.absolutePath} | bw unlock --raw")
-            )
-
-            return if (result.exitCode == 0) {
-                result.output.trim()
-            } else {
-                null
-            }
-        } finally {
-            passwordFile.delete()
+        return if (result.exitCode == 0 && result.output.isNotBlank()) {
+            result.output.trim()
+        } else {
+            null
         }
     }
 
     override fun getItem(itemName: String, session: String): BitwardenItem? {
         val result = processExecutor.executeWithOutput(
-            args = arrayOf("bw", "get", "item", itemName, "--session", session)
+            arrayOf("bw", "get", "item", itemName),
+            environment = mapOf("BW_SESSION" to session)
         )
 
-        if (result.exitCode != 0) {
-            return null
-        }
+        if (result.exitCode != 0) return null
 
         return try {
-            parseItem(result.output)
+            parseItem(JsonParser.parseString(result.output).asJsonObject)
         } catch (e: Exception) {
             null
         }
@@ -59,40 +64,41 @@ class BitwardenRepositoryImpl(
 
     override fun listItems(session: String): List<BitwardenItem> {
         val result = processExecutor.executeWithOutput(
-            args = arrayOf("bw", "list", "items", "--session", session)
+            arrayOf("bw", "list", "items"),
+            environment = mapOf("BW_SESSION" to session)
         )
 
-        if (result.exitCode != 0) {
-            return emptyList()
-        }
+        if (result.exitCode != 0) return emptyList()
 
         return try {
-            val json = Json.parseToJsonElement(result.output)
-            json.jsonArray.mapNotNull { parseItem(it.toString()) }
+            val items = JsonParser.parseString(result.output).asJsonArray
+            items.mapNotNull { element ->
+                try {
+                    parseItem(element.asJsonObject)
+                } catch (e: Exception) {
+                    null
+                }
+            }
         } catch (e: Exception) {
             emptyList()
         }
     }
 
-    private fun parseItem(jsonString: String): BitwardenItem? {
-        return try {
-            val json = Json.parseToJsonElement(jsonString).jsonObject
+    private fun parseItem(json: JsonObject): BitwardenItem {
+        val id = json.get("id")?.asString ?: ""
+        val name = json.get("name")?.asString ?: ""
 
-            val id = json["id"]?.jsonPrimitive?.content ?: return null
-            val name = json["name"]?.jsonPrimitive?.content ?: return null
+        val fields = mutableListOf<BitwardenItem.Field>()
 
-            val fields = json["fields"]?.jsonArray?.mapNotNull { fieldElement ->
-                val fieldObj = fieldElement.jsonObject
-                val fieldName = fieldObj["name"]?.jsonPrimitive?.content ?: return@mapNotNull null
-                val fieldValue = fieldObj["value"]?.jsonPrimitive?.content ?: return@mapNotNull null
-                val fieldType = fieldObj["type"]?.jsonPrimitive?.int ?: 0
+        json.get("fields")?.asJsonArray?.forEach { fieldElement ->
+            val fieldObj = fieldElement.asJsonObject
+            val fieldName = fieldObj.get("name")?.asString ?: ""
+            val fieldValue = fieldObj.get("value")?.asString
+            val fieldType = fieldObj.get("type")?.asInt ?: 0
 
-                BitwardenField(fieldName, fieldValue, fieldType)
-            } ?: emptyList()
-
-            BitwardenItem(id, name, fields)
-        } catch (e: Exception) {
-            null
+            fields.add(BitwardenItem.Field(fieldName, fieldValue, fieldType))
         }
+
+        return BitwardenItem(id, name, fields)
     }
 }

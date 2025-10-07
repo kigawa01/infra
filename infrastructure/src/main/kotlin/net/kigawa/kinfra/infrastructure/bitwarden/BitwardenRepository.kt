@@ -1,6 +1,6 @@
 package net.kigawa.kinfra.infrastructure.bitwarden
 
-import net.kigawa.kinfra.domain.BitwardenItem
+import net.kigawa.kinfra.model.BitwardenItem
 
 interface BitwardenRepository {
     fun isInstalled(): Boolean

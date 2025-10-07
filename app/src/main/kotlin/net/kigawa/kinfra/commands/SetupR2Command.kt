@@ -1,7 +1,7 @@
 package net.kigawa.kinfra.commands
 
 import net.kigawa.kinfra.domain.Command
-import net.kigawa.kinfra.domain.R2BackendConfig
+import net.kigawa.kinfra.model.R2BackendConfig
 import net.kigawa.kinfra.infrastructure.bitwarden.BitwardenRepository
 import java.io.File
 
