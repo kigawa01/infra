@@ -15,6 +15,7 @@ class TerraformRunner : KoinComponent {
 
     private val fmtCommand: Command by inject(named("fmt"))
     private val validateCommand: Command by inject(named("validate"))
+    private val setupR2Command: Command by inject(named("setup-r2"))
     private val initCommand: Command by inject(named("init"))
     private val planCommand: Command by inject(named("plan"))
     private val applyCommand: Command by inject(named("apply"))
@@ -26,6 +27,7 @@ class TerraformRunner : KoinComponent {
         mapOf(
             "fmt" to fmtCommand,
             "validate" to validateCommand,
+            "setup-r2" to setupR2Command,
             "init" to initCommand,
             "plan" to planCommand,
             "apply" to applyCommand,
@@ -50,8 +52,9 @@ class TerraformRunner : KoinComponent {
             exitProcess(1)
         }
 
-        // Skip Terraform check for help command
-        if (commandName != "help" && !isTerraformInstalled()) {
+        // Skip Terraform check for help and setup-r2 commands
+        val skipTerraformCheck = commandName == "help" || commandName == "setup-r2"
+        if (!skipTerraformCheck && !isTerraformInstalled()) {
             println("${RED}Error:${RESET} Terraform is not installed or not found in PATH.")
             println("${BLUE}Please install Terraform:${RESET}")
             println("  Ubuntu/Debian: sudo apt-get install terraform")

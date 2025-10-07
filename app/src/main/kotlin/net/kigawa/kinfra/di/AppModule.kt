@@ -12,6 +12,8 @@ import net.kigawa.kinfra.infrastructure.process.ProcessExecutorImpl
 import net.kigawa.kinfra.infrastructure.service.TerraformServiceImpl
 import net.kigawa.kinfra.infrastructure.terraform.TerraformRepository
 import net.kigawa.kinfra.infrastructure.terraform.TerraformRepositoryImpl
+import net.kigawa.kinfra.infrastructure.bitwarden.BitwardenRepository
+import net.kigawa.kinfra.infrastructure.bitwarden.BitwardenRepositoryImpl
 import net.kigawa.kinfra.infrastructure.validator.EnvironmentValidatorImpl
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
@@ -23,6 +25,7 @@ val appModule = module {
     single<TerraformRepository> { TerraformRepositoryImpl(get()) }
     single<EnvironmentValidator> { EnvironmentValidatorImpl() }
     single<TerraformService> { TerraformServiceImpl(get(), get()) }
+    single<BitwardenRepository> { BitwardenRepositoryImpl(get()) }
 
     // Presentation layer
     single<TerraformRunner> { TerraformRunner() }
@@ -30,6 +33,7 @@ val appModule = module {
     // Commands that don't require environment
     single<Command>(named("fmt")) { FormatCommand(get()) }
     single<Command>(named("validate")) { ValidateCommand(get()) }
+    single<Command>(named("setup-r2")) { SetupR2Command(get()) }
 
     // Commands that require environment
     single<Command>(named("init")) { InitCommand(get(), get()) }
@@ -43,6 +47,7 @@ val appModule = module {
         val commandMap = mapOf(
             "fmt" to get<Command>(named("fmt")),
             "validate" to get<Command>(named("validate")),
+            "setup-r2" to get<Command>(named("setup-r2")),
             "init" to get<Command>(named("init")),
             "plan" to get<Command>(named("plan")),
             "apply" to get<Command>(named("apply")),
