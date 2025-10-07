@@ -9,3 +9,4 @@ main() {
   ./gradlew build
   java -jar build/libs/kinfra-deploy.jar deploy
 }
+main
