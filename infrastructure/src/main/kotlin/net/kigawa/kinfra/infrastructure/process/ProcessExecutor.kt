@@ -14,8 +14,20 @@ interface ProcessExecutor {
         environment: Map<String, String> = emptyMap()
     ): CommandResult
 
+    fun executeWithOutput(
+        args: Array<String>,
+        workingDir: File? = null,
+        environment: Map<String, String> = emptyMap()
+    ): ExecutionResult
+
     fun checkInstalled(command: String): Boolean
 }
+
+data class ExecutionResult(
+    val exitCode: Int,
+    val output: String,
+    val error: String = ""
+)
 
 class ProcessExecutorImpl : ProcessExecutor {
     override fun execute(
@@ -42,6 +54,33 @@ class ProcessExecutorImpl : ProcessExecutor {
             CommandResult(exitCode)
         } catch (e: IOException) {
             CommandResult.failure(message = "Error executing command: ${e.message}")
+        }
+    }
+
+    override fun executeWithOutput(
+        args: Array<String>,
+        workingDir: File?,
+        environment: Map<String, String>
+    ): ExecutionResult {
+        return try {
+            val processBuilder = ProcessBuilder(*args)
+
+            if (workingDir != null) {
+                processBuilder.directory(workingDir)
+            }
+
+            environment.forEach { (key, value) ->
+                processBuilder.environment()[key] = value
+            }
+
+            val process = processBuilder.start()
+            val output = process.inputStream.bufferedReader().readText()
+            val error = process.errorStream.bufferedReader().readText()
+            val exitCode = process.waitFor()
+
+            ExecutionResult(exitCode, output, error)
+        } catch (e: IOException) {
+            ExecutionResult(1, "", "Error executing command: ${e.message}")
         }
     }
 
