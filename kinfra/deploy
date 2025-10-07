@@ -1,0 +1,12 @@
+#!/bin/bash
+##################################################
+set -ue
+BIN_DIR=$(cd "$(dirname "${BASH_SOURCE:-$0}")"; pwd)
+source "$BIN_DIR/util/util.bash"
+##################################################
+
+main() {
+  cd "$BIN_DIR"
+  ./gradlew build
+  java -jar build/libs/kinfra-deploy.jar deploy
+}
