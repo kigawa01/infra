@@ -1,5 +1,6 @@
 package net.kigawa.kinfra
 
+import net.kigawa.kinfra.infrastructure.logging.Logger
 import net.kigawa.kinfra.model.Command
 import net.kigawa.kinfra.model.CommandType
 import org.koin.core.component.KoinComponent
@@ -8,6 +9,7 @@ import org.koin.core.qualifier.named
 import kotlin.system.exitProcess
 
 class TerraformRunner : KoinComponent {
+    private val logger: Logger by inject()
     companion object {
         const val RESET = "\u001B[0m"
         const val RED = "\u001B[31m"
@@ -26,20 +28,26 @@ class TerraformRunner : KoinComponent {
     }
 
     fun run(args: Array<String>) {
+        logger.info("Starting Terraform Runner with args: ${args.joinToString(" ")}")
+
         if (args.isEmpty()) {
+            logger.warn("No command provided")
             commands[CommandType.HELP.commandName]?.execute(emptyArray())
             exitProcess(1)
         }
 
         var commandName = args[0]
+        logger.debug("Original command: $commandName")
 
         // deploy と setup-r2 コマンドは常に SDK 版を使用
         when (commandName) {
             CommandType.DEPLOY.commandName -> {
                 commandName = CommandType.DEPLOY_SDK.commandName
+                logger.info("Command redirected to SDK version: $commandName")
             }
             CommandType.SETUP_R2.commandName -> {
                 commandName = CommandType.SETUP_R2_SDK.commandName
+                logger.info("Command redirected to SDK version: $commandName")
             }
         }
 
@@ -48,6 +56,7 @@ class TerraformRunner : KoinComponent {
         if (command == null) {
             // SDK版コマンドが見つからない場合、BWS_ACCESS_TOKENの設定を促す
             if (commandName == CommandType.DEPLOY_SDK.commandName || commandName == CommandType.SETUP_R2_SDK.commandName) {
+                logger.error("BWS_ACCESS_TOKEN is not set for SDK command: $commandName")
                 println("${RED}Error:${RESET} BWS_ACCESS_TOKEN is not set.")
                 println()
                 println("${BLUE}Secret Manager is required for this command.${RESET}")
@@ -61,6 +70,7 @@ class TerraformRunner : KoinComponent {
                 exitProcess(1)
             }
 
+            logger.error("Unknown command: $commandName")
             println("${RED}Error:${RESET} Unknown command: $commandName")
             commands[CommandType.HELP.commandName]?.execute(emptyArray())
             exitProcess(1)
@@ -72,6 +82,7 @@ class TerraformRunner : KoinComponent {
             || commandName == CommandType.SETUP_R2.commandName
             || commandName == CommandType.SETUP_R2_SDK.commandName
         if (!skipTerraformCheck && !isTerraformInstalled()) {
+            logger.error("Terraform is not installed")
             println("${RED}Error:${RESET} Terraform is not installed or not found in PATH.")
             println("${BLUE}Please install Terraform:${RESET}")
             println("  Ubuntu/Debian: sudo apt-get install terraform")
@@ -83,6 +94,7 @@ class TerraformRunner : KoinComponent {
         val commandArgs = if (command.requiresEnvironment()) {
             if (args.size < 2) {
                 // Automatically use 'prod' environment if not specified
+                logger.info("Auto-selecting 'prod' environment")
                 arrayOf("prod", "--auto-selected")
             } else {
                 args.drop(1).toTypedArray()
@@ -91,8 +103,12 @@ class TerraformRunner : KoinComponent {
             args.drop(1).toTypedArray()
         }
 
+        logger.info("Executing command: $commandName with args: ${commandArgs.joinToString(" ")}")
         val exitCode = command.execute(commandArgs)
+        logger.info("Command $commandName finished with exit code: $exitCode")
+
         if (exitCode != 0) {
+            logger.error("Command $commandName failed with exit code: $exitCode")
             exitProcess(exitCode)
         }
     }
