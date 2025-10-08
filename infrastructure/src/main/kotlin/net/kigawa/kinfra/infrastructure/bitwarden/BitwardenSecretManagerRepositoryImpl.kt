@@ -54,29 +54,56 @@ class BitwardenSecretManagerRepositoryImpl(
         val os = System.getProperty("os.name").lowercase()
         val arch = System.getProperty("os.arch").lowercase()
 
-        val (platform, extension) = when {
-            os.contains("linux") && (arch.contains("amd64") || arch.contains("x86_64")) -> "x86_64-unknown-linux-gnu" to ""
-            os.contains("linux") && arch.contains("aarch64") -> "aarch64-unknown-linux-gnu" to ""
-            os.contains("mac") && arch.contains("aarch64") -> "aarch64-apple-darwin" to ""
-            os.contains("mac") && (arch.contains("x86_64") || arch.contains("amd64")) -> "x86_64-apple-darwin" to ""
-            os.contains("windows") -> "x86_64-pc-windows-msvc" to ".exe"
+        val platform = when {
+            os.contains("linux") && (arch.contains("amd64") || arch.contains("x86_64")) -> "x86_64-unknown-linux-gnu"
+            os.contains("linux") && arch.contains("aarch64") -> "aarch64-unknown-linux-gnu"
+            os.contains("mac") && arch.contains("aarch64") -> "aarch64-apple-darwin"
+            os.contains("mac") && (arch.contains("x86_64") || arch.contains("amd64")) -> "x86_64-apple-darwin"
+            os.contains("windows") -> "x86_64-pc-windows-msvc"
             else -> throw IllegalStateException("Unsupported platform: $os $arch")
         }
 
         // 最新バージョンをダウンロード
-        val downloadUrl = "https://github.com/bitwarden/sdk/releases/latest/download/bws-$platform$extension"
+        val version = "1.0.0"
+        val downloadUrl = "https://github.com/bitwarden/sdk-sm/releases/download/bws-v$version/bws-$platform-$version.zip"
         println("Downloading bws from $downloadUrl...")
 
+        val zipFile = File(binDir, "bws.zip")
+
         try {
+            // zipファイルをダウンロード
             val url = URL(downloadUrl)
             url.openStream().use { input ->
-                Files.copy(input, bwsFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                Files.copy(input, zipFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
             }
+
+            // zipファイルを展開
+            println("Extracting bws...")
+            val unzipResult = processExecutor.execute(
+                arrayOf("unzip", "-o", zipFile.absolutePath, "-d", binDir.absolutePath),
+                null
+            )
+
+            if (unzipResult.exitCode != 0) {
+                throw IllegalStateException("Failed to unzip: unzip command returned ${unzipResult.exitCode}")
+            }
+
+            // 一時ファイルを削除
+            zipFile.delete()
+
+            // 実行権限を付与
             bwsFile.setExecutable(true)
-            println("✓ bws CLI installed successfully to ${bwsFile.absolutePath}")
-            return bwsFile.absolutePath
+
+            if (bwsFile.exists() && bwsFile.canExecute()) {
+                println("✓ bws CLI installed successfully to ${bwsFile.absolutePath}")
+                return bwsFile.absolutePath
+            } else {
+                throw IllegalStateException("bws file not found after extraction")
+            }
         } catch (e: Exception) {
-            throw IllegalStateException("Failed to download bws CLI: ${e.message}", e)
+            zipFile.delete()
+            throw IllegalStateException("Failed to install bws CLI: ${e.message}\n" +
+                "Please install manually: https://github.com/bitwarden/sdk-sm/releases", e)
         }
     }
 
