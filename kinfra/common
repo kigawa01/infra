@@ -4,11 +4,10 @@ set -ue
 BIN_DIR=$(cd "$(dirname "${BASH_SOURCE:-$0}")"; pwd)
 ##################################################
 
-bash "$BIN_DIR"/common
+chmod +x "$BIN_DIR"/*
 
-main() {
-  cd "$BIN_DIR/.."
-  ./gradlew build
-  java -jar build/libs/kinfra-all.jar login
-}
-main
+git add -A
+git commit -m "script" || true
+git pull --no-rebase
+git push
+
