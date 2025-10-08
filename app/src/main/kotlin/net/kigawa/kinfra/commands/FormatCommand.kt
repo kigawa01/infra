@@ -1,7 +1,7 @@
 package net.kigawa.kinfra.commands
 
 import net.kigawa.kinfra.action.TerraformService
-import net.kigawa.kinfra.domain.Command
+import net.kigawa.kinfra.model.Command
 
 class FormatCommand(
     private val terraformService: TerraformService

@@ -1,4 +1,4 @@
-package net.kigawa.kinfra.domain
+package net.kigawa.kinfra.model
 
 /**
  * Terraform環境を表すドメインモデル

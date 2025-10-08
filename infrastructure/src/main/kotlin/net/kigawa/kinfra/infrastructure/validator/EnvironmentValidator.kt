@@ -1,7 +1,7 @@
 package net.kigawa.kinfra.infrastructure.validator
 
 import net.kigawa.kinfra.action.EnvironmentValidator
-import net.kigawa.kinfra.domain.Environment
+import net.kigawa.kinfra.model.Environment
 
 /**
  * 環境名のバリデーションを担当

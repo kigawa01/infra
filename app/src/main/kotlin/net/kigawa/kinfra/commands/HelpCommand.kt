@@ -1,6 +1,6 @@
 package net.kigawa.kinfra.commands
 
-import net.kigawa.kinfra.domain.Command
+import net.kigawa.kinfra.model.Command
 
 class HelpCommand(private val commands: Map<String, Command>) : Command {
     companion object {

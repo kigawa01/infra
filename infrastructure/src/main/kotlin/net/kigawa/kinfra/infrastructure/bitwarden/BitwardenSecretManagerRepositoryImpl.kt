@@ -2,7 +2,7 @@ package net.kigawa.kinfra.infrastructure.bitwarden
 
 import com.google.gson.Gson
 import com.google.gson.JsonObject
-import net.kigawa.kinfra.domain.BitwardenSecret
+import net.kigawa.kinfra.model.BitwardenSecret
 import net.kigawa.kinfra.infrastructure.process.ProcessExecutor
 import java.io.File
 import java.net.URL
