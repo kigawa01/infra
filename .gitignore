@@ -79,3 +79,7 @@ id_dsa
 # Ignore Gradle build output directory
 build
 /generated-old/
+
+# Bitwarden credentials
+.bw_session
+.bws_token

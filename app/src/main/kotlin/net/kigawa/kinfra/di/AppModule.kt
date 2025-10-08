@@ -31,8 +31,16 @@ val appModule = module {
     single<TerraformService> { TerraformServiceImpl(get(), get()) }
     single<BitwardenRepository> { BitwardenRepositoryImpl(get()) }
 
-    // Bitwarden Secret Manager (環境変数 BWS_ACCESS_TOKEN がある場合のみ初期化)
-    val bwsAccessToken = System.getenv("BWS_ACCESS_TOKEN")
+    // Bitwarden Secret Manager (環境変数または .bws_token ファイルから BWS_ACCESS_TOKEN を取得)
+    val bwsAccessToken = System.getenv("BWS_ACCESS_TOKEN") ?: run {
+        // ファイルから読み込み
+        val tokenFile = java.io.File(".bws_token")
+        if (tokenFile.exists() && tokenFile.canRead()) {
+            tokenFile.readText().trim().takeIf { it.isNotBlank() }
+        } else {
+            null
+        }
+    }
     val hasBwsToken = bwsAccessToken != null && bwsAccessToken.isNotBlank()
 
     if (hasBwsToken) {
