@@ -3,6 +3,7 @@ package net.kigawa.kinfra.commands
 import net.kigawa.kinfra.action.EnvironmentValidator
 import net.kigawa.kinfra.action.TerraformService
 import net.kigawa.kinfra.infrastructure.bitwarden.BitwardenSecretManagerRepository
+import net.kigawa.kinfra.infrastructure.config.EnvFileLoader
 import net.kigawa.kinfra.model.R2BackendConfig
 import java.io.File
 
@@ -85,6 +86,12 @@ class DeployCommandWithSDK(
         println("${YELLOW}Backend configuration not found or contains placeholders${RESET}")
         println("${BLUE}Fetching credentials from Bitwarden Secret Manager...${RESET}")
 
+        // プロジェクトIDを.envまたは環境変数から取得
+        val projectId = EnvFileLoader.get("BW_PROJECT")
+        if (projectId != null) {
+            println("${BLUE}Using project ID from .env: ${projectId}${RESET}")
+        }
+
         // シークレットを取得
         val secrets = try {
             secretManagerRepository.listSecrets()
@@ -92,6 +99,9 @@ class DeployCommandWithSDK(
             println("${RED}Error:${RESET} Failed to fetch secrets: ${e.message}")
             println()
             println("${BLUE}Make sure BWS_ACCESS_TOKEN environment variable is set${RESET}")
+            if (projectId != null) {
+                println("${BLUE}Using BW_PROJECT from .env: ${projectId}${RESET}")
+            }
             return false
         }
 

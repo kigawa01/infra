@@ -17,6 +17,7 @@ import net.kigawa.kinfra.infrastructure.bitwarden.BitwardenRepository
 import net.kigawa.kinfra.infrastructure.bitwarden.BitwardenRepositoryImpl
 import net.kigawa.kinfra.infrastructure.bitwarden.BitwardenSecretManagerRepository
 import net.kigawa.kinfra.infrastructure.bitwarden.BitwardenSecretManagerRepositoryImpl
+import net.kigawa.kinfra.infrastructure.config.EnvFileLoader
 import net.kigawa.kinfra.infrastructure.validator.EnvironmentValidatorImpl
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
@@ -36,7 +37,9 @@ val appModule = module {
 
     if (hasBwsToken) {
         single<BitwardenSecretManagerRepository> {
-            BitwardenSecretManagerRepositoryImpl(bwsAccessToken!!, get())
+            // .env から BW_PROJECT を読み込む
+            val projectId = EnvFileLoader.get("BW_PROJECT")
+            BitwardenSecretManagerRepositoryImpl(bwsAccessToken!!, get(), projectId)
         }
     }
 

@@ -3,6 +3,7 @@ package net.kigawa.kinfra.commands
 import net.kigawa.kinfra.domain.Command
 import net.kigawa.kinfra.model.R2BackendConfig
 import net.kigawa.kinfra.infrastructure.bitwarden.BitwardenSecretManagerRepository
+import net.kigawa.kinfra.infrastructure.config.EnvFileLoader
 import java.io.File
 
 /**
@@ -24,11 +25,15 @@ class SetupR2CommandWithSDK(
         println("${BLUE}=== Cloudflare R2 Backend Setup (Secret Manager SDK) ===${RESET}")
         println()
 
-        // プロジェクトIDを引数または環境変数から取得
+        // プロジェクトIDを引数、環境変数、.envファイルから取得
         val projectId = if (args.isNotEmpty()) {
             args[0]
         } else {
-            System.getenv("BW_PROJECT_ID")
+            EnvFileLoader.get("BW_PROJECT") ?: System.getenv("BW_PROJECT_ID")
+        }
+
+        if (projectId != null) {
+            println("${BLUE}Using project ID: ${projectId}${RESET}")
         }
 
         println("${BLUE}Fetching secrets from Bitwarden Secret Manager...${RESET}")

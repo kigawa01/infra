@@ -14,7 +14,8 @@ import java.nio.file.StandardCopyOption
  */
 class BitwardenSecretManagerRepositoryImpl(
     private val accessToken: String,
-    private val processExecutor: ProcessExecutor
+    private val processExecutor: ProcessExecutor,
+    private val projectId: String? = null
 ) : BitwardenSecretManagerRepository {
 
     private val gson = Gson()
@@ -90,7 +91,7 @@ class BitwardenSecretManagerRepositoryImpl(
             }
 
             val jsonArray = gson.fromJson(result.output, Array<JsonObject>::class.java)
-            jsonArray.map { json ->
+            val allSecrets = jsonArray.map { json ->
                 BitwardenSecret(
                     id = json.get("id").asString,
                     organizationId = json.get("organizationId")?.asString ?: "",
@@ -101,6 +102,13 @@ class BitwardenSecretManagerRepositoryImpl(
                     creationDate = json.get("creationDate")?.asString ?: "",
                     revisionDate = json.get("revisionDate")?.asString ?: ""
                 )
+            }
+
+            // プロジェクトIDが指定されている場合はフィルタリング
+            if (projectId != null) {
+                allSecrets.filter { it.projectId == projectId }
+            } else {
+                allSecrets
             }
         } catch (e: Exception) {
             println("Exception listing secrets: ${e.message}")
