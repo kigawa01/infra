@@ -12,7 +12,9 @@ data class R2BackendConfig(
             |bucket     = "$bucket"
             |key        = "$key"
             |region     = "auto"
-            |endpoint   = "$endpoint"
+            |endpoints = {
+            |  s3 = "$endpoint"
+            |}
             |access_key = "$accessKey"
             |secret_key = "$secretKey"
         """.trimMargin()
