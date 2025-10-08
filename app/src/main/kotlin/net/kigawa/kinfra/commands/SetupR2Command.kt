@@ -69,6 +69,11 @@ class SetupR2Command(
             println("${YELLOW}Available items (first 10):${RESET}")
             val items = bitwardenRepository.listItems(session)
             items.take(10).forEach { println("  - ${it.name}") }
+            println()
+            println("${BLUE}Note:${RESET} If you're using Bitwarden projects (BW_PROJECT in .env),")
+            println("consider using the SDK-based command instead:")
+            println("  ${BLUE}export BWS_ACCESS_TOKEN=<your-token>${RESET}")
+            println("  ${BLUE}./gradlew run --args=\"setup-r2-sdk\"${RESET}")
             return 1
         }
 

@@ -123,7 +123,18 @@ class DeployCommand(
 
         if (item == null) {
             println("${RED}Error:${RESET} Item '$itemName' not found in Bitwarden.")
-            println("${YELLOW}Please run:${RESET} ./gradlew run --args=\"setup-r2\"")
+            println()
+            println("${YELLOW}Options:${RESET}")
+            println("1. Create the item manually in Bitwarden with the following fields:")
+            println("   - Name: $itemName")
+            println("   - Fields: access_key, secret_key, account_id, bucket_name")
+            println()
+            println("2. Run the setup command:")
+            println("   ${BLUE}./gradlew run --args=\"setup-r2\"${RESET}")
+            println()
+            println("3. Or use the SDK-based deploy command (recommended if using BW_PROJECT):")
+            println("   ${BLUE}export BWS_ACCESS_TOKEN=<your-token>${RESET}")
+            println("   ${BLUE}./gradlew run --args=\"deploy-sdk prod\"${RESET}")
             return false
         }
 
