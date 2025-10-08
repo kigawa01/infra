@@ -1,4 +1,4 @@
-package net.kigawa.kinfra.domain
+package net.kigawa.kinfra.model
 
 /**
  * Bitwarden Secret Manager のシークレット

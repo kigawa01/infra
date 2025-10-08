@@ -4,8 +4,8 @@ import net.kigawa.kinfra.TerraformRunner
 import net.kigawa.kinfra.action.EnvironmentValidator
 import net.kigawa.kinfra.action.TerraformService
 import net.kigawa.kinfra.commands.*
-import net.kigawa.kinfra.domain.Command
-import net.kigawa.kinfra.domain.CommandType
+import net.kigawa.kinfra.model.Command
+import net.kigawa.kinfra.model.CommandType
 import net.kigawa.kinfra.infrastructure.file.FileRepository
 import net.kigawa.kinfra.infrastructure.file.FileRepositoryImpl
 import net.kigawa.kinfra.infrastructure.process.ProcessExecutor

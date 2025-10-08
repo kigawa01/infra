@@ -1,4 +1,4 @@
-package net.kigawa.kinfra.domain
+package net.kigawa.kinfra.model
 
 /**
  * コマンド実行結果を表すドメインモデル

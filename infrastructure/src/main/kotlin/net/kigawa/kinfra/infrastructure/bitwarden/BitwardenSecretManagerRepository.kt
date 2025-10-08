@@ -1,6 +1,6 @@
 package net.kigawa.kinfra.infrastructure.bitwarden
 
-import net.kigawa.kinfra.domain.BitwardenSecret
+import net.kigawa.kinfra.model.BitwardenSecret
 
 /**
  * Bitwarden Secret Manager SDK を使ったシークレット管理リポジトリ

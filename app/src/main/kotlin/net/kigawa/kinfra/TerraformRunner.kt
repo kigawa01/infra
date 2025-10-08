@@ -1,7 +1,7 @@
 package net.kigawa.kinfra
 
-import net.kigawa.kinfra.domain.Command
-import net.kigawa.kinfra.domain.CommandType
+import net.kigawa.kinfra.model.Command
+import net.kigawa.kinfra.model.CommandType
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.qualifier.named

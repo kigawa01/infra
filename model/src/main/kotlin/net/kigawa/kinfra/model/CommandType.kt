@@ -1,4 +1,4 @@
-package net.kigawa.kinfra.domain
+package net.kigawa.kinfra.model
 
 enum class CommandType(val commandName: String) {
     FMT("fmt"),

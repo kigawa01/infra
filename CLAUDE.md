@@ -190,8 +190,8 @@ app/build/install/app/bin/app help
 ## 重要な実装上の注意点
 
 ### パッケージ構造の注意
-- `model`モジュールは`net.kigawa.kinfra.domain`パッケージを使用（ディレクトリは`model/src/main/kotlin/net/kigawa/kinfra/domain/`）
-- 他のモジュールからは`import net.kigawa.kinfra.domain.*`でインポート
+- `model`モジュールは`net.kigawa.kinfra.model`パッケージを使用（ディレクトリは`model/src/main/kotlin/net/kigawa/kinfra/domain/`）
+- 他のモジュールからは`import net.kigawa.kinfra.model.*`でインポート
 
 ### 既存コードとの互換性
 - `ProcessExecutor`インターフェースは既に`infrastructure`モジュールに存在

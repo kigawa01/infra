@@ -1,6 +1,6 @@
 package net.kigawa.kinfra.infrastructure.process
 
-import net.kigawa.kinfra.domain.CommandResult
+import net.kigawa.kinfra.model.CommandResult
 import java.io.File
 import java.io.IOException
 
