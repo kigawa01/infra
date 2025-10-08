@@ -1,6 +1,7 @@
 package net.kigawa.kinfra
 
 import net.kigawa.kinfra.domain.Command
+import net.kigawa.kinfra.domain.CommandType
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.qualifier.named
@@ -13,33 +14,20 @@ class TerraformRunner : KoinComponent {
         const val BLUE = "\u001B[34m"
     }
 
-    private val fmtCommand: Command by inject(named("fmt"))
-    private val validateCommand: Command by inject(named("validate"))
-    private val setupR2Command: Command by inject(named("setup-r2"))
-    private val initCommand: Command by inject(named("init"))
-    private val planCommand: Command by inject(named("plan"))
-    private val applyCommand: Command by inject(named("apply"))
-    private val destroyCommand: Command by inject(named("destroy"))
-    private val deployCommand: Command by inject(named("deploy"))
-    private val helpCommand: Command by inject(named("help"))
-
     private val commands: Map<String, Command> by lazy {
-        mapOf(
-            "fmt" to fmtCommand,
-            "validate" to validateCommand,
-            "setup-r2" to setupR2Command,
-            "init" to initCommand,
-            "plan" to planCommand,
-            "apply" to applyCommand,
-            "destroy" to destroyCommand,
-            "deploy" to deployCommand,
-            "help" to helpCommand
-        )
+        buildMap {
+            CommandType.entries.forEach { commandType ->
+                runCatching {
+                    val command: Command by inject(named(commandType.commandName))
+                    put(commandType.commandName, command)
+                }
+            }
+        }
     }
 
     fun run(args: Array<String>) {
         if (args.isEmpty()) {
-            commands["help"]?.execute(emptyArray())
+            commands[CommandType.HELP.commandName]?.execute(emptyArray())
             exitProcess(1)
         }
 
@@ -48,12 +36,14 @@ class TerraformRunner : KoinComponent {
 
         if (command == null) {
             println("${RED}Error:${RESET} Unknown command: $commandName")
-            commands["help"]?.execute(emptyArray())
+            commands[CommandType.HELP.commandName]?.execute(emptyArray())
             exitProcess(1)
         }
 
-        // Skip Terraform check for help and setup-r2 commands
-        val skipTerraformCheck = commandName == "help" || commandName == "setup-r2"
+        // Skip Terraform check for help, login and setup-r2 commands
+        val skipTerraformCheck = commandName == CommandType.HELP.commandName
+            || commandName == CommandType.LOGIN.commandName
+            || commandName == CommandType.SETUP_R2.commandName
         if (!skipTerraformCheck && !isTerraformInstalled()) {
             println("${RED}Error:${RESET} Terraform is not installed or not found in PATH.")
             println("${BLUE}Please install Terraform:${RESET}")

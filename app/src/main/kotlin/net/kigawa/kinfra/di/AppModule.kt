@@ -5,6 +5,7 @@ import net.kigawa.kinfra.action.EnvironmentValidator
 import net.kigawa.kinfra.action.TerraformService
 import net.kigawa.kinfra.commands.*
 import net.kigawa.kinfra.domain.Command
+import net.kigawa.kinfra.domain.CommandType
 import net.kigawa.kinfra.infrastructure.file.FileRepository
 import net.kigawa.kinfra.infrastructure.file.FileRepositoryImpl
 import net.kigawa.kinfra.infrastructure.process.ProcessExecutor
@@ -43,44 +44,38 @@ val appModule = module {
     single<TerraformRunner> { TerraformRunner() }
 
     // Commands that don't require environment
-    single<Command>(named("fmt")) { FormatCommand(get()) }
-    single<Command>(named("validate")) { ValidateCommand(get()) }
-    single<Command>(named("setup-r2")) { SetupR2Command(get()) }
+    single<Command>(named(CommandType.FMT.commandName)) { FormatCommand(get()) }
+    single<Command>(named(CommandType.VALIDATE.commandName)) { ValidateCommand(get()) }
+    single<Command>(named(CommandType.LOGIN.commandName)) { LoginCommand(get()) }
+    single<Command>(named(CommandType.SETUP_R2.commandName)) { SetupR2Command(get()) }
 
     // SDK-based commands (only if BWS_ACCESS_TOKEN is available)
     if (hasBwsToken) {
-        single<Command>(named("setup-r2-sdk")) { SetupR2CommandWithSDK(get()) }
+        single<Command>(named(CommandType.SETUP_R2_SDK.commandName)) { SetupR2CommandWithSDK(get()) }
     }
 
     // Commands that require environment
-    single<Command>(named("init")) { InitCommand(get(), get()) }
-    single<Command>(named("plan")) { PlanCommand(get(), get()) }
-    single<Command>(named("apply")) { ApplyCommand(get(), get()) }
-    single<Command>(named("destroy")) { DestroyCommand(get(), get()) }
-    single<Command>(named("deploy")) { DeployCommand(get(), get(), get()) }
+    single<Command>(named(CommandType.INIT.commandName)) { InitCommand(get(), get()) }
+    single<Command>(named(CommandType.PLAN.commandName)) { PlanCommand(get(), get()) }
+    single<Command>(named(CommandType.APPLY.commandName)) { ApplyCommand(get(), get()) }
+    single<Command>(named(CommandType.DESTROY.commandName)) { DestroyCommand(get(), get()) }
+    single<Command>(named(CommandType.DEPLOY.commandName)) { DeployCommand(get(), get(), get()) }
 
     // SDK-based deploy (only if BWS_ACCESS_TOKEN is available)
     if (hasBwsToken) {
-        single<Command>(named("deploy-sdk")) { DeployCommandWithSDK(get(), get(), get()) }
+        single<Command>(named(CommandType.DEPLOY_SDK.commandName)) { DeployCommandWithSDK(get(), get(), get()) }
     }
 
     // Help command needs access to all commands
-    single<Command>(named("help")) {
-        val commandMap = mutableMapOf(
-            "fmt" to get<Command>(named("fmt")),
-            "validate" to get<Command>(named("validate")),
-            "setup-r2" to get<Command>(named("setup-r2")),
-            "init" to get<Command>(named("init")),
-            "plan" to get<Command>(named("plan")),
-            "apply" to get<Command>(named("apply")),
-            "destroy" to get<Command>(named("destroy")),
-            "deploy" to get<Command>(named("deploy"))
-        )
-
-        // SDK-based commands (only if BWS_ACCESS_TOKEN is available)
-        if (hasBwsToken) {
-            commandMap["setup-r2-sdk"] = get<Command>(named("setup-r2-sdk"))
-            commandMap["deploy-sdk"] = get<Command>(named("deploy-sdk"))
+    single<Command>(named(CommandType.HELP.commandName)) {
+        val commandMap = buildMap<String, Command> {
+            CommandType.entries.forEach { commandType ->
+                if (commandType != CommandType.HELP) {
+                    runCatching {
+                        put(commandType.commandName, get<Command>(named(commandType.commandName)))
+                    }
+                }
+            }
         }
 
         HelpCommand(commandMap)
