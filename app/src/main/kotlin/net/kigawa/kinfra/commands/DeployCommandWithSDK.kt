@@ -106,25 +106,29 @@ class DeployCommandWithSDK(
         }
 
         // R2認証情報を検索
-        val accessKeySecret = secrets.find { it.key == "r2_access_key" || it.key == "access_key" }
-        val secretKeySecret = secrets.find { it.key == "r2_secret_key" || it.key == "secret_key" }
-        val accountIdSecret = secrets.find { it.key == "r2_account_id" || it.key == "account_id" }
-        val bucketNameSecret = secrets.find { it.key == "r2_bucket_name" || it.key == "bucket_name" }
+        val accessKeySecret = secrets.find { it.key == "r2-access" }
+        val secretKeySecret = secrets.find { it.key == "r2-secret" }
+        val tokenSecret = secrets.find { it.key == "r2-token" }
+        val apiSecret = secrets.find { it.key == "r2-api" }
 
-        if (accessKeySecret == null || secretKeySecret == null || accountIdSecret == null) {
+        if (accessKeySecret == null || secretKeySecret == null || tokenSecret == null) {
             println("${RED}Error:${RESET} Required secrets not found in Secret Manager.")
             println()
             println("${YELLOW}Required secret keys:${RESET}")
-            println("  - r2_access_key or access_key")
-            println("  - r2_secret_key or secret_key")
-            println("  - r2_account_id or account_id")
+            println("  - r2-access (R2 Access Key ID)")
+            println("  - r2-secret (R2 Secret Access Key)")
+            println("  - r2-token (R2 Account ID)")
+            println("  - r2-api (bucket name, optional)")
+            println()
+            println("${BLUE}Available secrets:${RESET}")
+            secrets.forEach { println("  - ${it.key}") }
             return false
         }
 
         val accessKey = accessKeySecret.value
         val secretKey = secretKeySecret.value
-        val accountId = accountIdSecret.value
-        val bucketName = bucketNameSecret?.value ?: "kigawa-infra-state"
+        val accountId = tokenSecret.value
+        val bucketName = apiSecret?.value ?: "kigawa-infra-state"
 
         println("${GREEN}✓${RESET} Credentials retrieved from Secret Manager")
 
