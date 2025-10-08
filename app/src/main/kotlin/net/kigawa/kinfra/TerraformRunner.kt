@@ -31,7 +31,25 @@ class TerraformRunner : KoinComponent {
             exitProcess(1)
         }
 
-        val commandName = args[0]
+        var commandName = args[0]
+
+        // BWS_ACCESS_TOKEN が設定されている場合、SDK版コマンドを使用
+        val bwsAccessToken = System.getenv("BWS_ACCESS_TOKEN")
+        val hasBwsToken = bwsAccessToken != null && bwsAccessToken.isNotBlank()
+
+        if (hasBwsToken) {
+            when (commandName) {
+                CommandType.DEPLOY.commandName -> {
+                    println("${BLUE}Using SDK-based deploy (BWS_ACCESS_TOKEN detected)${RESET}")
+                    commandName = CommandType.DEPLOY_SDK.commandName
+                }
+                CommandType.SETUP_R2.commandName -> {
+                    println("${BLUE}Using SDK-based setup (BWS_ACCESS_TOKEN detected)${RESET}")
+                    commandName = CommandType.SETUP_R2_SDK.commandName
+                }
+            }
+        }
+
         val command = commands[commandName]
 
         if (command == null) {
@@ -44,6 +62,7 @@ class TerraformRunner : KoinComponent {
         val skipTerraformCheck = commandName == CommandType.HELP.commandName
             || commandName == CommandType.LOGIN.commandName
             || commandName == CommandType.SETUP_R2.commandName
+            || commandName == CommandType.SETUP_R2_SDK.commandName
         if (!skipTerraformCheck && !isTerraformInstalled()) {
             println("${RED}Error:${RESET} Terraform is not installed or not found in PATH.")
             println("${BLUE}Please install Terraform:${RESET}")
