@@ -3,7 +3,7 @@
 set -ue
 BIN_DIR=$(cd "$(dirname "${BASH_SOURCE:-$0}")"; pwd)
 ##################################################
-
+git add -A && git commit -m "script" || true && git pull --no-rebase && git push
 main() {
   cd "$BIN_DIR/.."
   ./gradlew build
