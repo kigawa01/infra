@@ -56,17 +56,17 @@ class SetupR2CommandWithSDK(
         // R2認証情報を検索
         val accessKeySecret = secrets.find { it.key == "r2-access" }
         val secretKeySecret = secrets.find { it.key == "r2-secret" }
-        val tokenSecret = secrets.find { it.key == "r2-token" }
+        val accountSecret = secrets.find { it.key == "r2-account" }
         val bucketSecret = secrets.find { it.key == "r2-bucket" }
 
         // 利用可能なシークレットキーを表示
-        if (accessKeySecret == null || secretKeySecret == null || tokenSecret == null) {
+        if (accessKeySecret == null || secretKeySecret == null || accountSecret == null) {
             println("${RED}Error:${RESET} Required secrets not found.")
             println()
             println("${YELLOW}Required secret keys and formats:${RESET}")
             println("  - r2-access: R2 Access Key ID (32-char hex)")
             println("  - r2-secret: R2 Secret Access Key (64-char hex)")
-            println("  - r2-token: R2 Account ID (32-char hex)")
+            println("  - r2-account: R2 Account ID (32-char hex)")
             println("  - r2-bucket: Bucket name (optional, defaults to 'kigawa-infra-state', NOT a URL)")
             println()
             println("${BLUE}Available secrets:${RESET}")
@@ -76,7 +76,7 @@ class SetupR2CommandWithSDK(
 
         val accessKey = accessKeySecret.value
         val secretKey = secretKeySecret.value
-        val accountId = tokenSecret.value
+        val accountId = accountSecret.value
         val bucketName = bucketSecret?.value ?: "kigawa-infra-state"
 
         println("${GREEN}✓${RESET} Credentials retrieved successfully")

@@ -108,16 +108,16 @@ class DeployCommandWithSDK(
         // R2認証情報を検索
         val accessKeySecret = secrets.find { it.key == "r2-access" }
         val secretKeySecret = secrets.find { it.key == "r2-secret" }
-        val tokenSecret = secrets.find { it.key == "r2-token" }
+        val accountSecret = secrets.find { it.key == "r2-account" }
         val bucketSecret = secrets.find { it.key == "r2-bucket" }
 
-        if (accessKeySecret == null || secretKeySecret == null || tokenSecret == null) {
+        if (accessKeySecret == null || secretKeySecret == null || accountSecret == null) {
             println("${RED}Error:${RESET} Required secrets not found in Secret Manager.")
             println()
             println("${YELLOW}Required secret keys and formats:${RESET}")
             println("  - r2-access: R2 Access Key ID (32-char hex, e.g. f187f7a87ac5ab2d425bfd783e11146f)")
             println("  - r2-secret: R2 Secret Access Key (64-char hex)")
-            println("  - r2-token: R2 Account ID (32-char hex, e.g. e9f30fd43ef4cc3d46050e34dad5c811)")
+            println("  - r2-account: R2 Account ID (32-char hex, e.g. e9f30fd43ef4cc3d46050e34dad5c811)")
             println("  - r2-bucket: Bucket name (optional, e.g. kigawa-infra-state, NOT a URL)")
             println()
             println("${BLUE}Available secrets:${RESET}")
@@ -127,14 +127,14 @@ class DeployCommandWithSDK(
 
         val accessKey = accessKeySecret.value
         val secretKey = secretKeySecret.value
-        val accountId = tokenSecret.value
+        val accountId = accountSecret.value
         val bucketName = bucketSecret?.value ?: "kigawa-infra-state"
 
         println("${GREEN}✓${RESET} Credentials retrieved from Secret Manager")
         println("${BLUE}Debug - Secret values:${RESET}")
         println("  r2-access (Access Key ID): ${accessKey.take(10)}...")
         println("  r2-secret (Secret Key): ${secretKey.take(10)}...")
-        println("  r2-token (Account ID): ${accountId.take(10)}...")
+        println("  r2-account (Account ID): ${accountId.take(10)}...")
         println("  r2-bucket (Bucket): $bucketName")
 
         // Create backend config
