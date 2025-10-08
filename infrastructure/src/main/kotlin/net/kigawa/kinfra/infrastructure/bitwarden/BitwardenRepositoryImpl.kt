@@ -5,10 +5,15 @@ import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import net.kigawa.kinfra.infrastructure.process.ProcessExecutor
 import net.kigawa.kinfra.model.BitwardenItem
+import java.io.File
 
 class BitwardenRepositoryImpl(
     private val processExecutor: ProcessExecutor
 ) : BitwardenRepository {
+
+    companion object {
+        private const val SESSION_FILE = ".bw_session"
+    }
 
     private val gson = Gson()
 
@@ -84,6 +89,23 @@ class BitwardenRepositoryImpl(
         } catch (e: Exception) {
             emptyList()
         }
+    }
+
+    override fun getSessionFromFile(): String? {
+        return try {
+            val sessionFile = File(SESSION_FILE)
+            if (sessionFile.exists() && sessionFile.canRead()) {
+                sessionFile.readText().trim().takeIf { it.isNotBlank() }
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    override fun getSessionFromEnv(): String? {
+        return System.getenv("BW_SESSION")?.takeIf { it.isNotBlank() }
     }
 
     private fun parseItem(json: JsonObject): BitwardenItem {

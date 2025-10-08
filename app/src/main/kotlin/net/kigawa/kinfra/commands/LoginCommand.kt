@@ -2,6 +2,7 @@ package net.kigawa.kinfra.commands
 
 import net.kigawa.kinfra.domain.Command
 import net.kigawa.kinfra.infrastructure.bitwarden.BitwardenRepository
+import java.io.File
 
 class LoginCommand(
     private val bitwardenRepository: BitwardenRepository
@@ -13,6 +14,7 @@ class LoginCommand(
         const val GREEN = "\u001B[32m"
         const val YELLOW = "\u001B[33m"
         const val BLUE = "\u001B[34m"
+        private const val SESSION_FILE = ".bw_session"
     }
 
     override fun execute(args: Array<String>): Int {
@@ -46,10 +48,23 @@ class LoginCommand(
                 return 1
             }
 
-            println("${GREEN}✓${RESET} Vault unlocked successfully")
-            println()
-            println("${BLUE}Set the session variable:${RESET}")
-            println("  export BW_SESSION=\"$session\"")
+            // Save session to file
+            try {
+                val sessionFile = File(SESSION_FILE)
+                sessionFile.writeText(session)
+                sessionFile.setReadable(false, false)
+                sessionFile.setReadable(true, true)
+                sessionFile.setWritable(false, false)
+                sessionFile.setWritable(true, true)
+                println("${GREEN}✓${RESET} Vault unlocked successfully")
+                println("${GREEN}✓${RESET} Session saved to ${sessionFile.absolutePath}")
+                println()
+                println("${BLUE}To use the session, run:${RESET}")
+                println("  export BW_SESSION=\$(cat ${SESSION_FILE})")
+            } catch (e: Exception) {
+                println("${RED}Error:${RESET} Failed to save session: ${e.message}")
+                return 1
+            }
             return 0
         }
 

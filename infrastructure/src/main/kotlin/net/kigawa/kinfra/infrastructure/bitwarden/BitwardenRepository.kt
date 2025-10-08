@@ -8,4 +8,6 @@ interface BitwardenRepository {
     fun unlock(password: String): String?
     fun getItem(itemName: String, session: String): BitwardenItem?
     fun listItems(session: String): List<BitwardenItem>
+    fun getSessionFromFile(): String?
+    fun getSessionFromEnv(): String?
 }
