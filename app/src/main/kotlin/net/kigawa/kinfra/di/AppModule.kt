@@ -32,19 +32,27 @@ val appModule = module {
     single<BitwardenRepository> { BitwardenRepositoryImpl(get()) }
 
     // Bitwarden Secret Manager (環境変数または .bws_token ファイルから BWS_ACCESS_TOKEN を取得)
-    val bwsAccessToken = System.getenv("BWS_ACCESS_TOKEN") ?: run {
+    val bwsAccessToken = System.getenv("BWS_ACCESS_TOKEN")?.also {
+        println("✓ Using BWS_ACCESS_TOKEN from environment variable")
+    } ?: run {
         // ファイルから読み込み
         val tokenFile = java.io.File(".bws_token")
         if (tokenFile.exists() && tokenFile.canRead()) {
-            tokenFile.readText().trim().takeIf { it.isNotBlank() }
+            tokenFile.readText().trim().takeIf { it.isNotBlank() }?.also {
+                println("✓ Loaded BWS_ACCESS_TOKEN from .bws_token file")
+            }
         } else {
             null
         }
     }
     val hasBwsToken = bwsAccessToken != null && bwsAccessToken.isNotBlank()
 
+    if (!hasBwsToken) {
+        println("⚠ BWS_ACCESS_TOKEN not available - SDK commands will not be registered")
+    }
+
     if (hasBwsToken) {
-        single<BitwardenSecretManagerRepository> {
+        single<BitwardenSecretManagerRepository>(createdAtStart = true) {
             // .env から BW_PROJECT を読み込む
             val projectId = EnvFileLoader.get("BW_PROJECT")
             BitwardenSecretManagerRepositoryImpl(bwsAccessToken!!, get(), projectId)

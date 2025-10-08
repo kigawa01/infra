@@ -22,8 +22,10 @@ class BitwardenSecretManagerRepositoryImpl(
     private val bwsPath: String
 
     init {
+        println("DEBUG: Initializing BitwardenSecretManagerRepositoryImpl")
         // bws CLI の自動インストールとパス取得
         bwsPath = ensureBwsInstalled()
+        println("DEBUG: BitwardenSecretManagerRepositoryImpl initialized with bwsPath=$bwsPath")
     }
 
     /**
@@ -62,7 +64,7 @@ class BitwardenSecretManagerRepositoryImpl(
         }
 
         // 最新バージョンをダウンロード
-        val downloadUrl = "https://github.com/bitwarden/sdk-sm/releases/latest/download/bws-$platform$extension"
+        val downloadUrl = "https://github.com/bitwarden/sdk/releases/latest/download/bws-$platform$extension"
         println("Downloading bws from $downloadUrl...")
 
         try {
