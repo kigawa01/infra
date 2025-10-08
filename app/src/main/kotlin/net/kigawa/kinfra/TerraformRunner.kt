@@ -33,26 +33,34 @@ class TerraformRunner : KoinComponent {
 
         var commandName = args[0]
 
-        // BWS_ACCESS_TOKEN が設定されている場合、SDK版コマンドを使用
-        val bwsAccessToken = System.getenv("BWS_ACCESS_TOKEN")
-        val hasBwsToken = bwsAccessToken != null && bwsAccessToken.isNotBlank()
-
-        if (hasBwsToken) {
-            when (commandName) {
-                CommandType.DEPLOY.commandName -> {
-                    println("${BLUE}Using SDK-based deploy (BWS_ACCESS_TOKEN detected)${RESET}")
-                    commandName = CommandType.DEPLOY_SDK.commandName
-                }
-                CommandType.SETUP_R2.commandName -> {
-                    println("${BLUE}Using SDK-based setup (BWS_ACCESS_TOKEN detected)${RESET}")
-                    commandName = CommandType.SETUP_R2_SDK.commandName
-                }
+        // deploy と setup-r2 コマンドは常に SDK 版を使用
+        when (commandName) {
+            CommandType.DEPLOY.commandName -> {
+                commandName = CommandType.DEPLOY_SDK.commandName
+            }
+            CommandType.SETUP_R2.commandName -> {
+                commandName = CommandType.SETUP_R2_SDK.commandName
             }
         }
 
         val command = commands[commandName]
 
         if (command == null) {
+            // SDK版コマンドが見つからない場合、BWS_ACCESS_TOKENの設定を促す
+            if (commandName == CommandType.DEPLOY_SDK.commandName || commandName == CommandType.SETUP_R2_SDK.commandName) {
+                println("${RED}Error:${RESET} BWS_ACCESS_TOKEN is not set.")
+                println()
+                println("${BLUE}Secret Manager is required for this command.${RESET}")
+                println("${BLUE}Please set the BWS_ACCESS_TOKEN environment variable:${RESET}")
+                println("  export BWS_ACCESS_TOKEN=\"your-token\"")
+                println()
+                println("${BLUE}To generate a token:${RESET}")
+                println("  1. Log in to Bitwarden Web Vault")
+                println("  2. Go to Secret Manager section")
+                println("  3. Generate an access token from project settings")
+                exitProcess(1)
+            }
+
             println("${RED}Error:${RESET} Unknown command: $commandName")
             commands[CommandType.HELP.commandName]?.execute(emptyArray())
             exitProcess(1)
