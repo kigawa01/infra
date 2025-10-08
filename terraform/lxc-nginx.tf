@@ -36,7 +36,7 @@ resource "null_resource" "test_lxc_nginx_ssh_connection" {
     type        = "ssh"
     host        = var.lxc_nginx_target_host == "lxc-nginx" ? "192.168.3.100" : var.lxc_nginx_target_host
     user        = "root"
-    private_key = var.ssh_key_path != "" ? file(var.ssh_key_path) : file("./ssh-keys/id_ed25519")
+    private_key = var.ssh_key_path != "" ? file(var.ssh_key_path) : file("../ssh-keys/id_ed25519")
     timeout     = "30s"
     agent       = false
   }
@@ -65,7 +65,7 @@ resource "null_resource" "install_lxc_nginx" {
     type        = "ssh"
     host        = var.lxc_nginx_target_host == "lxc-nginx" ? "192.168.3.100" : var.lxc_nginx_target_host
     user        = "root"
-    private_key = var.ssh_key_path != "" ? file(var.ssh_key_path) : file("./ssh-keys/id_ed25519")
+    private_key = var.ssh_key_path != "" ? file(var.ssh_key_path) : file("../ssh-keys/id_ed25519")
     timeout     = "5m"
     agent       = false
   }

@@ -74,7 +74,7 @@ class TerraformServiceImpl(
         }
         val planArgs = if (planFile != null) arrayOf(planFile) else emptyArray()
 
-        val args = baseArgs + varFileArgs + planArgs + additionalArgs
+        val args = baseArgs + additionalArgs + varFileArgs + planArgs
 
         return processExecutor.execute(
             args = args,

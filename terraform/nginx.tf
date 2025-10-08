@@ -38,7 +38,7 @@ resource "null_resource" "test_nginx_ssh_connection" {
     type        = "ssh"
     host        = var.nginx_target_host == "one-sakura" ? "133.242.178.198" : var.nginx_target_host
     user        = var.ssh_user
-    private_key = var.ssh_key_path != "" ? file(var.ssh_key_path) : file("./ssh-keys/id_ed25519")
+    private_key = var.ssh_key_path != "" ? file(var.ssh_key_path) : file("../ssh-keys/id_ed25519")
     timeout     = "30s"
     agent       = false
   }
@@ -67,7 +67,7 @@ resource "null_resource" "install_nginx" {
     type        = "ssh"
     host        = var.nginx_target_host == "one-sakura" ? "133.242.178.198" : var.nginx_target_host
     user        = var.ssh_user
-    private_key = var.ssh_key_path != "" ? file(var.ssh_key_path) : file("./ssh-keys/id_ed25519")
+    private_key = var.ssh_key_path != "" ? file(var.ssh_key_path) : file("../ssh-keys/id_ed25519")
     timeout     = "5m"
     agent       = false
   }

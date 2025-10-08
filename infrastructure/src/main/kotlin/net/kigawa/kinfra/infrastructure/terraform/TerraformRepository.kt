@@ -41,9 +41,12 @@ class TerraformRepositoryImpl(
         val sshConfigFile = File(projectRoot, "ssh_config")
         val sshConfigPath = fileRepository.getAbsolutePath(sshConfigFile)
 
+        // Terraformファイルはterraformディレクトリに配置
+        val terraformDir = File(projectRoot, "terraform")
+
         return TerraformConfig(
             environment = environment,
-            workingDirectory = projectRoot,
+            workingDirectory = terraformDir,
             varFile = varFile,
             sshConfigPath = sshConfigPath
         )

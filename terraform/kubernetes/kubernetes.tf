@@ -83,6 +83,7 @@ resource "null_resource" "apply_k8s_locally" {
 
   provisioner "local-exec" {
     command = "kubectl apply -f ${join(" -f ", local.all_manifest_file_paths)}"
+    working_dir = path.root
   }
 
   triggers = {

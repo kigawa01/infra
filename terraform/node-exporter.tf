@@ -33,7 +33,7 @@ resource "null_resource" "test_ssh_connection" {
     type        = "ssh"
     host        = var.target_host == "k8s4" ? "192.168.1.120" : var.target_host
     user        = var.ssh_user
-    private_key = var.ssh_key_path != "" ? file(var.ssh_key_path) : file("./ssh-keys/id_ed25519")
+    private_key = var.ssh_key_path != "" ? file(var.ssh_key_path) : file("../ssh-keys/id_ed25519")
     timeout     = "30s"
     agent       = false
   }
@@ -60,7 +60,7 @@ resource "null_resource" "install_node_exporter" {
     type        = "ssh"
     host        = var.target_host == "k8s4" ? "192.168.1.120" : var.target_host
     user        = var.ssh_user
-    private_key = var.ssh_key_path != "" ? file(var.ssh_key_path) : file("./ssh-keys/id_ed25519")
+    private_key = var.ssh_key_path != "" ? file(var.ssh_key_path) : file("../ssh-keys/id_ed25519")
     timeout     = "5m"
     agent       = false
   }

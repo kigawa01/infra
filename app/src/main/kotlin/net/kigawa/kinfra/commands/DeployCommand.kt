@@ -53,7 +53,12 @@ class DeployCommand(
 
         // Step 3: Apply
         println("${BLUE}Step 3/3: Applying changes${RESET}")
-        val applyResult = terraformService.apply(environment, additionalArgs = additionalArgs)
+        val applyArgsWithAutoApprove = if (additionalArgs.contains("-auto-approve")) {
+            additionalArgs
+        } else {
+            additionalArgs + "-auto-approve"
+        }
+        val applyResult = terraformService.apply(environment, additionalArgs = applyArgsWithAutoApprove)
 
         if (applyResult.isSuccess) {
             println()
