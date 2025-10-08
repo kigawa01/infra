@@ -19,11 +19,24 @@ import net.kigawa.kinfra.infrastructure.bitwarden.BitwardenSecretManagerReposito
 import net.kigawa.kinfra.infrastructure.bitwarden.BitwardenSecretManagerRepositoryImpl
 import net.kigawa.kinfra.infrastructure.config.EnvFileLoader
 import net.kigawa.kinfra.infrastructure.validator.EnvironmentValidatorImpl
+import net.kigawa.kinfra.infrastructure.logging.Logger
+import net.kigawa.kinfra.infrastructure.logging.FileLogger
+import net.kigawa.kinfra.infrastructure.logging.LogLevel
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 val appModule = module {
     // Infrastructure layer
+    single<Logger> {
+        val logDir = System.getenv("KINFRA_LOG_DIR") ?: "logs"
+        val logLevelStr = System.getenv("KINFRA_LOG_LEVEL") ?: "INFO"
+        val logLevel = try {
+            LogLevel.valueOf(logLevelStr.uppercase())
+        } catch (e: IllegalArgumentException) {
+            LogLevel.INFO
+        }
+        FileLogger(logDir, logLevel)
+    }
     single<FileRepository> { FileRepositoryImpl() }
     single<ProcessExecutor> { ProcessExecutorImpl() }
     single<TerraformRepository> { TerraformRepositoryImpl(get()) }
