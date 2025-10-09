@@ -83,3 +83,6 @@ build
 # Bitwarden credentials
 .bw_session
 .bws_token
+
+# Terraform auto-generated vars
+terraform/hosts.auto.tfvars
