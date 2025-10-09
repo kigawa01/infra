@@ -15,7 +15,7 @@ class TerraformServiceImpl(
     private val terraformRepository: TerraformRepository
 ) : TerraformService {
 
-    override fun init(environment: Environment, additionalArgs: Array<String>): CommandResult {
+    override fun init(environment: Environment, additionalArgs: Array<String>, quiet: Boolean): CommandResult {
         val config = terraformRepository.getTerraformConfig(environment)
 
         // Check for backend config file
@@ -28,7 +28,8 @@ class TerraformServiceImpl(
         return processExecutor.execute(
             args = args,
             workingDir = config.workingDirectory,
-            environment = mapOf("SSH_CONFIG" to config.sshConfigPath)
+            environment = mapOf("SSH_CONFIG" to config.sshConfigPath),
+            quiet = quiet
         )
     }
 
@@ -46,7 +47,7 @@ class TerraformServiceImpl(
         return null
     }
 
-    override fun plan(environment: Environment, additionalArgs: Array<String>): CommandResult {
+    override fun plan(environment: Environment, additionalArgs: Array<String>, quiet: Boolean): CommandResult {
         val config = terraformRepository.getTerraformConfig(environment)
         val varFileArgs = if (config.hasVarFile()) {
             arrayOf("-var-file=${config.varFile!!.absolutePath}")
@@ -59,11 +60,12 @@ class TerraformServiceImpl(
         return processExecutor.execute(
             args = args,
             workingDir = config.workingDirectory,
-            environment = mapOf("SSH_CONFIG" to config.sshConfigPath)
+            environment = mapOf("SSH_CONFIG" to config.sshConfigPath),
+            quiet = quiet
         )
     }
 
-    override fun apply(environment: Environment, planFile: String?, additionalArgs: Array<String>): CommandResult {
+    override fun apply(environment: Environment, planFile: String?, additionalArgs: Array<String>, quiet: Boolean): CommandResult {
         val config = terraformRepository.getTerraformConfig(environment)
 
         val baseArgs = arrayOf("terraform", "apply")
@@ -79,11 +81,12 @@ class TerraformServiceImpl(
         return processExecutor.execute(
             args = args,
             workingDir = config.workingDirectory,
-            environment = mapOf("SSH_CONFIG" to config.sshConfigPath)
+            environment = mapOf("SSH_CONFIG" to config.sshConfigPath),
+            quiet = quiet
         )
     }
 
-    override fun destroy(environment: Environment, additionalArgs: Array<String>): CommandResult {
+    override fun destroy(environment: Environment, additionalArgs: Array<String>, quiet: Boolean): CommandResult {
         val config = terraformRepository.getTerraformConfig(environment)
         val varFileArgs = if (config.hasVarFile()) {
             arrayOf("-var-file=${config.varFile!!.absolutePath}")
@@ -96,22 +99,23 @@ class TerraformServiceImpl(
         return processExecutor.execute(
             args = args,
             workingDir = config.workingDirectory,
-            environment = mapOf("SSH_CONFIG" to config.sshConfigPath)
+            environment = mapOf("SSH_CONFIG" to config.sshConfigPath),
+            quiet = quiet
         )
     }
 
-    override fun format(recursive: Boolean): CommandResult {
+    override fun format(recursive: Boolean, quiet: Boolean): CommandResult {
         val args = if (recursive) {
             arrayOf("terraform", "fmt", "-recursive")
         } else {
             arrayOf("terraform", "fmt")
         }
 
-        return processExecutor.execute(args = args)
+        return processExecutor.execute(args = args, quiet = quiet)
     }
 
-    override fun validate(): CommandResult {
-        return processExecutor.execute(args = arrayOf("terraform", "validate"))
+    override fun validate(quiet: Boolean): CommandResult {
+        return processExecutor.execute(args = arrayOf("terraform", "validate"), quiet = quiet)
     }
 
     override fun getTerraformConfig(environment: Environment): TerraformConfig {

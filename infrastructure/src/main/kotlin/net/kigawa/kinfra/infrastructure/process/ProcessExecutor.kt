@@ -11,7 +11,8 @@ interface ProcessExecutor {
     fun execute(
         args: Array<String>,
         workingDir: File? = null,
-        environment: Map<String, String> = emptyMap()
+        environment: Map<String, String> = emptyMap(),
+        quiet: Boolean = true
     ): CommandResult
 
     fun executeWithOutput(
@@ -33,7 +34,8 @@ class ProcessExecutorImpl : ProcessExecutor {
     override fun execute(
         args: Array<String>,
         workingDir: File?,
-        environment: Map<String, String>
+        environment: Map<String, String>,
+        quiet: Boolean
     ): CommandResult {
         return try {
             val processBuilder = ProcessBuilder(*args)
@@ -46,7 +48,13 @@ class ProcessExecutorImpl : ProcessExecutor {
                 processBuilder.environment()[key] = value
             }
 
-            processBuilder.inheritIO()
+            if (quiet) {
+                // 出力を抑制
+                processBuilder.redirectOutput(ProcessBuilder.Redirect.DISCARD)
+                processBuilder.redirectError(ProcessBuilder.Redirect.DISCARD)
+            } else {
+                processBuilder.inheritIO()
+            }
 
             val process = processBuilder.start()
             val exitCode = process.waitFor()
