@@ -73,3 +73,16 @@
 [2025-10-10 08:20:07.229] [ERROR] Command deploy-sdk failed with exit code: 1
 [2025-10-10 08:20:21.286] [INFO] Starting Terraform Runner with args: cobfig
 [2025-10-10 08:20:21.299] [ERROR] Unknown command: cobfig
+[2025-10-10 08:21:11.698] [INFO] Starting Terraform Runner with args: cobfig
+[2025-10-10 08:21:11.711] [ERROR] Unknown command: cobfig
+[2025-10-10 08:21:43.054] [INFO] Starting Terraform Runner with args: config
+[2025-10-10 08:21:43.069] [INFO] Executing command: config with args: 
+[2025-10-10 08:21:43.069] [INFO] Executing config command with args: 
+[2025-10-10 08:21:43.072] [INFO] Command config finished with exit code: 1
+[2025-10-10 08:21:43.072] [ERROR] Command config failed with exit code: 1
+[2025-10-10 08:22:15.804] [INFO] Starting Terraform Runner with args: config disable lxc_nginx
+[2025-10-10 08:22:15.818] [INFO] Executing command: config with args: disable lxc_nginx
+[2025-10-10 08:22:15.818] [INFO] Executing config command with args: disable lxc_nginx
+[2025-10-10 08:22:15.831] [INFO] Host lxc_nginx disabled
+[2025-10-10 08:22:15.837] [INFO] Updated Terraform vars file: /tank/var/user/dev/kigawa/infra/terraform/hosts.auto.tfvars
+[2025-10-10 08:22:15.837] [INFO] Command config finished with exit code: 0
