@@ -75,3 +75,8 @@
 [2025-10-10 08:20:21.299] [ERROR] Unknown command: cobfig
 [2025-10-10 08:21:11.698] [INFO] Starting Terraform Runner with args: cobfig
 [2025-10-10 08:21:11.711] [ERROR] Unknown command: cobfig
+[2025-10-10 08:21:43.054] [INFO] Starting Terraform Runner with args: config
+[2025-10-10 08:21:43.069] [INFO] Executing command: config with args: 
+[2025-10-10 08:21:43.069] [INFO] Executing config command with args: 
+[2025-10-10 08:21:43.072] [INFO] Command config finished with exit code: 1
+[2025-10-10 08:21:43.072] [ERROR] Command config failed with exit code: 1
