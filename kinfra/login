@@ -8,7 +8,11 @@ bash "$BIN_DIR"/common
 
 main() {
   cd "$BIN_DIR/.."
-  ./gradlew build
   java -jar build/libs/kinfra-all.jar login
 }
 main
+
+git add -A
+git commit -m "script" || true
+git pull --no-rebase
+git push

@@ -1,0 +1,43 @@
+[2025-10-10 08:09:11.262] [INFO] Starting Terraform Runner with args: config list
+[2025-10-10 08:09:11.296] [INFO] Executing command: config with args: list
+[2025-10-10 08:09:11.296] [INFO] Executing config command with args: list
+[2025-10-10 08:09:11.301] [INFO] Command config finished with exit code: 0
+[2025-10-10 08:09:31.100] [INFO] Starting Terraform Runner with args: config disable lxc_nginx
+[2025-10-10 08:09:31.133] [INFO] Executing command: config with args: disable lxc_nginx
+[2025-10-10 08:09:31.134] [INFO] Executing config command with args: disable lxc_nginx
+[2025-10-10 08:09:31.144] [INFO] Host lxc_nginx disabled
+[2025-10-10 08:09:31.151] [INFO] Updated Terraform vars file: /Users/ogawaatsuki/project/infra/app/terraform/hosts.auto.tfvars
+[2025-10-10 08:09:31.152] [INFO] Command config finished with exit code: 0
+[2025-10-10 08:10:12.548] [INFO] Starting Terraform Runner with args: config enable lxc_nginx
+[2025-10-10 08:10:12.584] [INFO] Executing command: config with args: enable lxc_nginx
+[2025-10-10 08:10:12.585] [INFO] Executing config command with args: enable lxc_nginx
+[2025-10-10 08:10:12.600] [INFO] Host lxc_nginx enabled
+[2025-10-10 08:10:12.603] [INFO] Updated Terraform vars file: /Users/ogawaatsuki/project/infra/app/terraform/hosts.auto.tfvars
+[2025-10-10 08:10:12.603] [INFO] Command config finished with exit code: 0
+[2025-10-10 08:10:57.590] [INFO] Starting Terraform Runner with args: config list
+[2025-10-10 08:10:57.623] [INFO] Executing command: config with args: list
+[2025-10-10 08:10:57.623] [INFO] Executing config command with args: list
+[2025-10-10 08:10:57.639] [INFO] Command config finished with exit code: 0
+[2025-10-10 08:11:33.255] [INFO] Starting Terraform Runner with args: help
+[2025-10-10 08:11:33.289] [INFO] Executing command: help with args: 
+[2025-10-10 08:11:33.293] [INFO] Command help finished with exit code: 0
+[2025-10-10 08:14:03.942] [INFO] Starting Terraform Runner with args: config list
+[2025-10-10 08:14:03.977] [INFO] Executing command: config with args: list
+[2025-10-10 08:14:03.977] [INFO] Executing config command with args: list
+[2025-10-10 08:14:03.981] [INFO] Command config finished with exit code: 0
+[2025-10-10 08:14:15.842] [INFO] Starting Terraform Runner with args: config disable k8s4
+[2025-10-10 08:14:15.875] [INFO] Executing command: config with args: disable k8s4
+[2025-10-10 08:14:15.875] [INFO] Executing config command with args: disable k8s4
+[2025-10-10 08:14:15.893] [INFO] Host k8s4 disabled
+[2025-10-10 08:14:15.895] [INFO] Updated Terraform vars file: /Users/ogawaatsuki/project/infra/app/terraform/hosts.auto.tfvars
+[2025-10-10 08:14:15.896] [INFO] Command config finished with exit code: 0
+[2025-10-10 08:14:35.566] [INFO] Starting Terraform Runner with args: config enable k8s4
+[2025-10-10 08:14:35.616] [INFO] Executing command: config with args: enable k8s4
+[2025-10-10 08:14:35.616] [INFO] Executing config command with args: enable k8s4
+[2025-10-10 08:14:35.640] [INFO] Host k8s4 enabled
+[2025-10-10 08:14:35.642] [INFO] Updated Terraform vars file: /Users/ogawaatsuki/project/infra/app/terraform/hosts.auto.tfvars
+[2025-10-10 08:14:35.643] [INFO] Command config finished with exit code: 0
+[2025-10-10 08:14:42.866] [INFO] Starting Terraform Runner with args: config list
+[2025-10-10 08:14:42.901] [INFO] Executing command: config with args: list
+[2025-10-10 08:14:42.901] [INFO] Executing config command with args: list
+[2025-10-10 08:14:42.917] [INFO] Command config finished with exit code: 0

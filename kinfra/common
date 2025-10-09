@@ -5,9 +5,13 @@ BIN_DIR=$(cd "$(dirname "${BASH_SOURCE:-$0}")"; pwd)
 ##################################################
 
 chmod +x "$BIN_DIR"/*
-
+common(){
+  cd "$BIN_DIR/.."
+  ./gradlew build
 git add -A
 git commit -m "script" || true
 git pull --no-rebase
 git push
+}
 
+common

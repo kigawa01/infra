@@ -13,11 +13,15 @@ import net.kigawa.kinfra.infrastructure.process.ProcessExecutorImpl
 import net.kigawa.kinfra.infrastructure.service.TerraformServiceImpl
 import net.kigawa.kinfra.infrastructure.terraform.TerraformRepository
 import net.kigawa.kinfra.infrastructure.terraform.TerraformRepositoryImpl
+import net.kigawa.kinfra.infrastructure.terraform.TerraformVarsManager
+import net.kigawa.kinfra.infrastructure.terraform.TerraformVarsManagerImpl
 import net.kigawa.kinfra.infrastructure.bitwarden.BitwardenRepository
 import net.kigawa.kinfra.infrastructure.bitwarden.BitwardenRepositoryImpl
 import net.kigawa.kinfra.infrastructure.bitwarden.BitwardenSecretManagerRepository
 import net.kigawa.kinfra.infrastructure.bitwarden.BitwardenSecretManagerRepositoryImpl
 import net.kigawa.kinfra.infrastructure.config.EnvFileLoader
+import net.kigawa.kinfra.infrastructure.config.ConfigRepository
+import net.kigawa.kinfra.infrastructure.config.ConfigRepositoryImpl
 import net.kigawa.kinfra.infrastructure.validator.EnvironmentValidatorImpl
 import net.kigawa.kinfra.infrastructure.logging.Logger
 import net.kigawa.kinfra.infrastructure.logging.FileLogger
@@ -43,6 +47,8 @@ val appModule = module {
     single<EnvironmentValidator> { EnvironmentValidatorImpl() }
     single<TerraformService> { TerraformServiceImpl(get(), get()) }
     single<BitwardenRepository> { BitwardenRepositoryImpl(get()) }
+    single<ConfigRepository> { ConfigRepositoryImpl() }
+    single<TerraformVarsManager> { TerraformVarsManagerImpl(get()) }
 
     // Bitwarden Secret Manager (環境変数または .bws_token ファイルから BWS_ACCESS_TOKEN を取得)
     val bwsAccessToken = System.getenv("BWS_ACCESS_TOKEN")?.also {
@@ -80,6 +86,7 @@ val appModule = module {
     single<Command>(named(CommandType.VALIDATE.commandName)) { ValidateCommand(get()) }
     single<Command>(named(CommandType.LOGIN.commandName)) { LoginCommand(get()) }
     single<Command>(named(CommandType.SETUP_R2.commandName)) { SetupR2Command(get()) }
+    single<Command>(named(CommandType.CONFIG.commandName)) { ConfigCommand(get(), get(), get()) }
 
     // SDK-based commands (only if BWS_ACCESS_TOKEN is available)
     if (hasBwsToken) {

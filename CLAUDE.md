@@ -82,16 +82,68 @@ Terraformをラップしたマルチモジュールアプリケーション。Bi
 
 ### Terraform インフラ構造
 - **メインTerraform設定** (`*.tf`): SSH経由でのnginx・Node Exporterデプロイ
+- **ホストモジュール** (`terraform/host/`): ホスト別の独立したモジュール
+  - `one-sakura/`: Nginxインストールモジュール
+  - `k8s4/`: Node Exporterインストールモジュール
+  - `lxc-nginx/`: LXC Nginxインストールモジュール
+  - 各モジュールは`main.tf`、`variables.tf`、`locals.tf`（必要に応じて）で構成
+- **ホスト管理** (`terraform/hosts.tf`): 全ホストモジュールの一元管理
 - **Kubernetesモジュール** (`kubernetes/`): Terraform Kubernetesプロバイダー経由管理
 - **テンプレートシステム** (`templates/`): 動的設定生成
 - **環境別設定** (`environments/`): dev/staging/prod 設定
+
+### ホストモジュールパターン
+
+**モジュール構造**:
+```hcl
+# terraform/hosts.tf でモジュールを一元管理
+module "one_sakura" {
+  source = "./host/one-sakura"
+  count  = var.enable_one_sakura ? 1 : 0
+
+  nginx_enabled     = true
+  nginx_server_name = "0.0.0.0"
+  ssh_user          = var.ssh_user
+  ssh_key_path      = var.ssh_key_path
+}
+```
+
+**ホストの有効/無効制御**:
+- `var.enable_one_sakura`: one-sakuraモジュールの有効化（デフォルト: true）
+- `var.enable_k8s4`: k8s4モジュールの有効化（デフォルト: true）
+- `var.enable_lxc_nginx`: lxc-nginxモジュールの有効化（デフォルト: false）
+
+**ローカル変数パターン**:
+各ホストモジュールで`locals.tf`を使用してネストした変数構造を定義可能：
+```hcl
+# terraform/host/lxc-nginx/locals.tf
+locals {
+  home = {
+    gate = {
+      nginx = {
+        install = {
+          script = {
+            tmpPath = "/tmp/install_lxc_nginx.sh"
+          }
+        }
+        conf = {
+          proxy = {
+            tmpPath = "/tmp/lxc_proxy.stream.conf"
+          }
+        }
+      }
+    }
+  }
+}
+# 使用例: local.home.gate.nginx.install.script.tmpPath
+```
 
 ### ホストマッピングパターン
 Terraformコードは以下の論理名を物理IPアドレスにマッピング：
 ```hcl
 # one-sakura: 133.242.178.198 (Nginx デプロイ先)
 # k8s4: 192.168.1.120 (Node Exporter デプロイ先)
-# lxc-nginx: LXC コンテナでのNginx デプロイ先
+# lxc-nginx: 192.168.3.100 (LXC Nginx デプロイ先)
 ```
 
 ## 重要なパターン
@@ -151,14 +203,27 @@ private_key = var.ssh_key_path != "" ? file(var.ssh_key_path) : file("./ssh-keys
 - `kubernetes_config_path = "/home/kigawa/.kube/config"`: デフォルトのkubeconfig
 - `apply_one_dev_manifests = true`: one/dev関連マニフェストも適用
 
-### Nginx設定
+### ホストモジュール設定
+
+**one-sakura (Nginx)**:
+- `enable_one_sakura = true`: モジュールを有効化（デフォルト: true）
 - `nginx_enabled = true`: nginxインストールを有効化
 - `nginx_server_name = "0.0.0.0"`: すべてのリクエストを受け付ける
 - `nginx_target_host = "one-sakura"`: one-sakuraサーバー（`133.242.178.198`にマッピング）
 
-### Node Exporter設定
+**k8s4 (Node Exporter)**:
+- `enable_k8s4 = true`: モジュールを有効化（デフォルト: true）
 - `node_exporter_enabled = true`: Node Exporterインストールを有効化
+- `node_exporter_version = "1.6.1"`: Node Exporterバージョン
+- `node_exporter_port = 9100`: Node Exporterポート
 - `target_host = "k8s4"`: リモートホスト（`192.168.1.120`にマッピング）
+
+**lxc-nginx (LXC Nginx)**:
+- `enable_lxc_nginx = false`: モジュールを有効化（デフォルト: false）
+- `lxc_nginx_enabled = true`: LXC nginxインストールを有効化
+- `lxc_nginx_server_name = "0.0.0.0"`: すべてのリクエストを受け付ける
+- `lxc_nginx_target_host = "lxc-nginx"`: LXCホスト（`192.168.3.100`にマッピング）
+- SSH接続はrootユーザーを使用
 
 ## 開発環境構築
 
@@ -203,5 +268,61 @@ app/build/install/app/bin/app help
 1. インターフェース/クラスを適切なモジュールに配置
 2. `di/AppModule.kt`にバインディングを追加
 3. コンストラクタインジェクションを使用
+
+### 新しいホストモジュールの追加
+新しいホストを追加する手順：
+
+1. **モジュールディレクトリの作成**:
+   ```bash
+   mkdir -p terraform/host/new-host
+   ```
+
+2. **variables.tfの作成**:
+   ```hcl
+   # terraform/host/new-host/variables.tf
+   variable "ssh_user" {
+     description = "SSH username"
+     type        = string
+     default     = "kigawa"
+   }
+
+   variable "ssh_key_path" {
+     description = "Path to SSH private key"
+     type        = string
+     default     = ""
+   }
+   # ... その他の変数
+   ```
+
+3. **main.tfの作成**:
+   - SSH接続設定（`connection`ブロック）
+   - リソース定義（`null_resource`でプロビジョニング）
+   - テンプレートファイルの参照
+
+4. **locals.tf（オプション）**:
+   - 複雑なパス構造が必要な場合に作成
+   - ネストした変数構造を定義
+
+5. **hosts.tfへの追加**:
+   ```hcl
+   # terraform/hosts.tf
+   module "new_host" {
+     source = "./host/new-host"
+     count  = var.enable_new_host ? 1 : 0
+
+     ssh_user     = var.ssh_user
+     ssh_key_path = var.ssh_key_path
+   }
+   ```
+
+6. **variables.tfへの追加**:
+   ```hcl
+   # terraform/variables.tf
+   variable "enable_new_host" {
+     description = "Whether to enable new-host configuration"
+     type        = bool
+     default     = false
+   }
+   ```
 
 - 日本語を使う

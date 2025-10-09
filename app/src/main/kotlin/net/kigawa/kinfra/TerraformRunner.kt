@@ -76,9 +76,10 @@ class TerraformRunner : KoinComponent {
             exitProcess(1)
         }
 
-        // Skip Terraform check for help, login and setup-r2 commands
+        // Skip Terraform check for help, login, config and setup-r2 commands
         val skipTerraformCheck = commandName == CommandType.HELP.commandName
             || commandName == CommandType.LOGIN.commandName
+            || commandName == CommandType.CONFIG.commandName
             || commandName == CommandType.SETUP_R2.commandName
             || commandName == CommandType.SETUP_R2_SDK.commandName
         if (!skipTerraformCheck && !isTerraformInstalled()) {
