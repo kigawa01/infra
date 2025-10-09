@@ -8,7 +8,7 @@ bash "$BIN_DIR"/common
 
 main() {
   cd "$BIN_DIR/.."
-  java -jar build/libs/kinfra-all.jar cobfig "$@"
+  java -jar build/libs/kinfra-all.jar config "$@"
 }
 main "$@"
 
