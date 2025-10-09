@@ -73,3 +73,5 @@
 [2025-10-10 08:20:07.229] [ERROR] Command deploy-sdk failed with exit code: 1
 [2025-10-10 08:20:21.286] [INFO] Starting Terraform Runner with args: cobfig
 [2025-10-10 08:20:21.299] [ERROR] Unknown command: cobfig
+[2025-10-10 08:21:11.698] [INFO] Starting Terraform Runner with args: cobfig
+[2025-10-10 08:21:11.711] [ERROR] Unknown command: cobfig
