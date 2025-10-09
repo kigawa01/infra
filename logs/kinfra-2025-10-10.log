@@ -100,3 +100,30 @@
 [2025-10-10 08:23:13.934] [ERROR] Terraform plan failed with exit code: 1
 [2025-10-10 08:23:13.935] [INFO] Command deploy-sdk finished with exit code: 1
 [2025-10-10 08:23:13.935] [ERROR] Command deploy-sdk failed with exit code: 1
+[2025-10-10 08:34:15.790] [INFO] Starting Terraform Runner with args: deploy
+[2025-10-10 08:34:15.798] [INFO] Command redirected to SDK version: deploy-sdk
+[2025-10-10 08:34:15.822] [INFO] Auto-selecting 'prod' environment
+[2025-10-10 08:34:15.824] [INFO] Executing command: deploy-sdk with args: prod --auto-selected
+[2025-10-10 08:34:15.824] [INFO] DeployCommandWithSDK started with args: prod --auto-selected
+[2025-10-10 08:34:15.826] [INFO] Environment: prod, Auto-selected: true
+[2025-10-10 08:34:15.827] [INFO] Step 0: Checking R2 backend configuration
+[2025-10-10 08:34:15.827] [INFO] Backend configuration already exists and is valid
+[2025-10-10 08:34:15.827] [INFO] Step 1: Initializing Terraform
+[2025-10-10 08:34:16.459] [INFO] Terraform init completed successfully
+[2025-10-10 08:34:16.459] [INFO] Step 2: Creating execution plan
+[2025-10-10 08:34:17.110] [INFO] Terraform plan completed successfully
+[2025-10-10 08:34:17.110] [INFO] Step 3: Applying changes
+[2025-10-10 08:37:36.817] [ERROR] Terraform apply failed with exit code: 1
+[2025-10-10 08:37:36.818] [INFO] Command deploy-sdk finished with exit code: 1
+[2025-10-10 08:37:36.818] [ERROR] Command deploy-sdk failed with exit code: 1
+[2025-10-10 08:37:54.262] [INFO] Starting Terraform Runner with args: config disable k8s
+[2025-10-10 08:37:54.276] [INFO] Executing command: config with args: disable k8s
+[2025-10-10 08:37:54.277] [INFO] Executing config command with args: disable k8s
+[2025-10-10 08:37:54.279] [INFO] Command config finished with exit code: 1
+[2025-10-10 08:37:54.279] [ERROR] Command config failed with exit code: 1
+[2025-10-10 08:38:04.709] [INFO] Starting Terraform Runner with args: config disable k8s4
+[2025-10-10 08:38:04.723] [INFO] Executing command: config with args: disable k8s4
+[2025-10-10 08:38:04.723] [INFO] Executing config command with args: disable k8s4
+[2025-10-10 08:38:04.739] [INFO] Host k8s4 disabled
+[2025-10-10 08:38:04.741] [INFO] Updated Terraform vars file: /tank/var/user/dev/kigawa/infra/terraform/hosts.auto.tfvars
+[2025-10-10 08:38:04.742] [INFO] Command config finished with exit code: 0
