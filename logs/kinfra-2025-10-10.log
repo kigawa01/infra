@@ -121,3 +121,9 @@
 [2025-10-10 08:37:54.277] [INFO] Executing config command with args: disable k8s
 [2025-10-10 08:37:54.279] [INFO] Command config finished with exit code: 1
 [2025-10-10 08:37:54.279] [ERROR] Command config failed with exit code: 1
+[2025-10-10 08:38:04.709] [INFO] Starting Terraform Runner with args: config disable k8s4
+[2025-10-10 08:38:04.723] [INFO] Executing command: config with args: disable k8s4
+[2025-10-10 08:38:04.723] [INFO] Executing config command with args: disable k8s4
+[2025-10-10 08:38:04.739] [INFO] Host k8s4 disabled
+[2025-10-10 08:38:04.741] [INFO] Updated Terraform vars file: /tank/var/user/dev/kigawa/infra/terraform/hosts.auto.tfvars
+[2025-10-10 08:38:04.742] [INFO] Command config finished with exit code: 0
