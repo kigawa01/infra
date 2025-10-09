@@ -37,3 +37,17 @@ module "lxc_nginx" {
   lxc_nginx_target_host  = "lxc-nginx"
   ssh_key_path           = var.ssh_key_path
 }
+
+# host5 (192.168.1.50) host (Node Exporter installation)
+module "host5" {
+  source = "./host/host5"
+  count  = var.enable_host5 ? 1 : 0
+
+  node_exporter_enabled = true
+  node_exporter_version = "1.6.1"
+  node_exporter_port    = 9100
+  target_host           = "host5"
+  ssh_user              = var.ssh_user
+  ssh_key_path          = var.ssh_key_path
+  sudo_password         = var.sudo_password
+}
