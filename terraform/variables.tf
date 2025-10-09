@@ -4,21 +4,9 @@ variable "environment" {
 }
 
 variable "target_host" {
-  description = "Target host IP address for Node Exporter installation and Kubernetes operations"
+  description = "Target host IP address for Kubernetes operations"
   type        = string
   default     = "k8s4"
-}
-
-variable "nginx_target_host" {
-  description = "Target host for Nginx installation"
-  type        = string
-  default     = "one-sakura"
-}
-
-variable "lxc_nginx_target_host" {
-  description = "Target host for LXC Nginx installation"
-  type        = string
-  default     = "lxc-nginx"
 }
 
 variable "ssh_user" {
@@ -45,24 +33,6 @@ variable "sudo_password" {
   type        = string
   default     = ""
   sensitive   = true
-}
-
-variable "node_exporter_enabled" {
-  description = "Whether to enable Prometheus Node Exporter"
-  type        = bool
-  default     = true
-}
-
-variable "node_exporter_version" {
-  description = "Version of Prometheus Node Exporter to install"
-  type        = string
-  default     = "1.6.1"
-}
-
-variable "node_exporter_port" {
-  description = "Port for Prometheus Node Exporter"
-  type        = number
-  default     = 9100
 }
 
 # Kubernetes configuration variables
@@ -114,28 +84,21 @@ variable "apply_one_dev_manifests" {
   default     = false
 }
 
-# Nginx configuration variables
-variable "nginx_enabled" {
-  description = "Whether to enable nginx installation and configuration"
+# Host module configuration
+variable "enable_one_sakura" {
+  description = "Whether to enable one-sakura host configuration"
   type        = bool
   default     = true
 }
 
-variable "nginx_server_name" {
-  description = "Server name for nginx configuration"
-  type        = string
-  default     = "0.0.0.0"
+variable "enable_k8s4" {
+  description = "Whether to enable k8s4 host configuration"
+  type        = bool
+  default     = true
 }
 
-# LXC Nginx configuration variables
-variable "lxc_nginx_enabled" {
-  description = "Whether to enable LXC nginx installation and configuration"
+variable "enable_lxc_nginx" {
+  description = "Whether to enable lxc-nginx host configuration"
   type        = bool
   default     = false
-}
-
-variable "lxc_nginx_server_name" {
-  description = "Server name for LXC nginx configuration"
-  type        = string
-  default     = "0.0.0.0"
 }
