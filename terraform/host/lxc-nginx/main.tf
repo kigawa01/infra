@@ -3,7 +3,7 @@ resource "local_file" "lxc_nginx_install_script" {
   count = var.lxc_nginx_enabled ? 1 : 0
 
   filename = "${path.module}/generated/install_lxc_nginx.sh"
-  content = templatefile("${path.module}/templates/nginx_install.sh.tpl", {})
+  content = templatefile("${path.module}/../../templates/nginx_install.sh.tpl", {})
 
   file_permission = "0755"
 }
@@ -12,7 +12,7 @@ resource "local_file" "lxc_nginx_config" {
   count = var.lxc_nginx_enabled ? 1 : 0
 
   filename = "${path.module}/generated/lxc_nginx.conf"
-  content = templatefile("${path.module}/templates/lxc_nginx.conf.tpl", {
+  content = templatefile("${path.module}/../../templates/lxc_nginx.conf.tpl", {
     server_name = var.lxc_nginx_server_name
   })
 
@@ -23,7 +23,7 @@ resource "local_file" "lxc_nginx_stream_config" {
   count = var.lxc_nginx_enabled ? 1 : 0
 
   filename = "${path.module}/generated/lxc_proxy.stream.conf"
-  content = templatefile("${path.module}/templates/lxc_stream.conf.tpl", {})
+  content = templatefile("${path.module}/../../templates/lxc_stream.conf.tpl", {})
 
   file_permission = "0644"
 }

@@ -3,7 +3,7 @@ resource "local_file" "nginx_install_script" {
   count = var.nginx_enabled ? 1 : 0
 
   filename = "${path.module}/generated/install_nginx.sh"
-  content = templatefile("${path.module}/templates/nginx_install.sh.tpl", {})
+  content = templatefile("${path.module}/../../templates/nginx_install.sh.tpl", {})
 
   file_permission = "0755"
 }
@@ -13,7 +13,7 @@ resource "local_file" "nginx_config" {
   count = var.nginx_enabled ? 1 : 0
 
   filename = "${path.module}/generated/nginx.conf"
-  content = templatefile("${path.module}/templates/nginx_default.conf.tpl", {
+  content = templatefile("${path.module}/../../templates/nginx_default.conf.tpl", {
     server_name = var.nginx_server_name
   })
 
@@ -25,7 +25,7 @@ resource "local_file" "nginx_stream_config" {
   count = var.nginx_enabled ? 1 : 0
 
   filename = "${path.module}/generated/proxy.stream.conf"
-  content = templatefile("${path.module}/templates/nginx_stream.conf.tpl", {})
+  content = templatefile("${path.module}/../../templates/nginx_stream.conf.tpl", {})
 
   file_permission = "0644"
 }

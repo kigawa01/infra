@@ -86,3 +86,17 @@
 [2025-10-10 08:22:15.831] [INFO] Host lxc_nginx disabled
 [2025-10-10 08:22:15.837] [INFO] Updated Terraform vars file: /tank/var/user/dev/kigawa/infra/terraform/hosts.auto.tfvars
 [2025-10-10 08:22:15.837] [INFO] Command config finished with exit code: 0
+[2025-10-10 08:23:12.609] [INFO] Starting Terraform Runner with args: deploy
+[2025-10-10 08:23:12.616] [INFO] Command redirected to SDK version: deploy-sdk
+[2025-10-10 08:23:12.639] [INFO] Auto-selecting 'prod' environment
+[2025-10-10 08:23:12.641] [INFO] Executing command: deploy-sdk with args: prod --auto-selected
+[2025-10-10 08:23:12.641] [INFO] DeployCommandWithSDK started with args: prod --auto-selected
+[2025-10-10 08:23:12.643] [INFO] Environment: prod, Auto-selected: true
+[2025-10-10 08:23:12.644] [INFO] Step 0: Checking R2 backend configuration
+[2025-10-10 08:23:12.644] [INFO] Backend configuration already exists and is valid
+[2025-10-10 08:23:12.644] [INFO] Step 1: Initializing Terraform
+[2025-10-10 08:23:13.458] [INFO] Terraform init completed successfully
+[2025-10-10 08:23:13.458] [INFO] Step 2: Creating execution plan
+[2025-10-10 08:23:13.934] [ERROR] Terraform plan failed with exit code: 1
+[2025-10-10 08:23:13.935] [INFO] Command deploy-sdk finished with exit code: 1
+[2025-10-10 08:23:13.935] [ERROR] Command deploy-sdk failed with exit code: 1

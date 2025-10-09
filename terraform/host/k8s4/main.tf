@@ -3,7 +3,7 @@ resource "local_file" "node_exporter_script" {
   count = var.node_exporter_enabled ? 1 : 0
 
   filename = "${path.module}/generated/install_node_exporter.sh"
-  content = templatefile("${path.module}/templates/node_exporter_install.sh.tpl", {
+  content = templatefile("${path.module}/../../templates/node_exporter_install.sh.tpl", {
     node_exporter_version = var.node_exporter_version
     node_exporter_port    = var.node_exporter_port
   })
@@ -16,7 +16,7 @@ resource "local_file" "ssh_install_script" {
   count = var.node_exporter_enabled ? 1 : 0
 
   filename = "${path.module}/generated/deploy_to_remote.sh"
-  content = templatefile("${path.module}/templates/deploy_remote.sh.tpl", {
+  content = templatefile("${path.module}/../../templates/deploy_remote.sh.tpl", {
     target_host = var.target_host
     ssh_user    = var.ssh_user
     ssh_key     = var.ssh_key_path
