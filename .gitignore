@@ -71,7 +71,7 @@ id_dsa
 /environments/**/terraform.tfvars
 /legacy/
 /kubernetes/manifests/one/dev/harbor-account-secret.yml
-/ssh-keys/id_ed25519
+/ssh-keys/
 /ssh_config
 # Ignore Gradle project-specific cache directory
 .gradle

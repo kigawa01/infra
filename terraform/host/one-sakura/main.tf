@@ -45,7 +45,7 @@ resource "null_resource" "test_nginx_ssh_connection" {
 
   provisioner "remote-exec" {
     inline = [
-      "echo 'SSH connection test successful for nginx installation on ${var.target_host}'",
+      "echo 'SSH connection test successful for nginx installation on ${var.nginx_target_host}'",
       "whoami",
       "uname -a"
     ]
