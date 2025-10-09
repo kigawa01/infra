@@ -102,3 +102,9 @@ variable "enable_lxc_nginx" {
   type        = bool
   default     = false
 }
+
+variable "enable_host5" {
+  description = "Whether to enable host5 (192.168.1.50) host configuration"
+  type        = bool
+  default     = false
+}
