@@ -39,14 +39,14 @@ class DeployCommand(
 
         // Step 1: Initialize
         println("${BLUE}Step 1/3: Initializing Terraform${RESET}")
-        val initResult = terraformService.init(environment)
+        val initResult = terraformService.init(environment, quiet = false)
         if (initResult.isFailure) return initResult.exitCode
 
         println()
 
         // Step 2: Plan
         println("${BLUE}Step 2/3: Creating execution plan${RESET}")
-        val planResult = terraformService.plan(environment, additionalArgs)
+        val planResult = terraformService.plan(environment, additionalArgs, quiet = false)
         if (planResult.isFailure) return planResult.exitCode
 
         println()
@@ -58,7 +58,7 @@ class DeployCommand(
         } else {
             additionalArgs + "-auto-approve"
         }
-        val applyResult = terraformService.apply(environment, additionalArgs = applyArgsWithAutoApprove)
+        val applyResult = terraformService.apply(environment, additionalArgs = applyArgsWithAutoApprove, quiet = false)
 
         if (applyResult.isSuccess) {
             println()
