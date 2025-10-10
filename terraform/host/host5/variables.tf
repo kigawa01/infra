@@ -1,31 +1,7 @@
-# host5 (192.168.1.50) specific variables
-
-variable "node_exporter_enabled" {
-  description = "Whether to enable Prometheus Node Exporter"
-  type        = bool
-  default     = true
-}
-
-variable "node_exporter_version" {
-  description = "Version of Prometheus Node Exporter to install"
-  type        = string
-  default     = "1.6.1"
-}
-
-variable "node_exporter_port" {
-  description = "Port for Prometheus Node Exporter"
-  type        = number
-  default     = 9100
-}
-
-variable "target_host" {
-  description = "Target host IP address for Node Exporter installation"
-  type        = string
-  default     = "host5"
-}
+# host5 (192.168.1.50) - libvirt VM management
 
 variable "ssh_user" {
-  description = "SSH username for remote connection"
+  description = "SSH username for host5 connection"
   type        = string
   default     = "kigawa"
 }
@@ -36,9 +12,51 @@ variable "ssh_key_path" {
   default     = ""
 }
 
-variable "sudo_password" {
-  description = "Sudo password for executing commands with elevated privileges"
+variable "vm_enabled" {
+  description = "Whether to create Ubuntu VM"
+  type        = bool
+  default     = true
+}
+
+variable "vm_name" {
+  description = "Name of the VM"
   type        = string
-  default     = ""
+  default     = "ubuntu-vm"
+}
+
+variable "vm_vcpu" {
+  description = "Number of vCPUs for the VM"
+  type        = number
+  default     = 2
+}
+
+variable "vm_memory" {
+  description = "Memory size in MB for the VM"
+  type        = number
+  default     = 2048
+}
+
+variable "vm_disk_size" {
+  description = "Disk size in bytes for the VM (default: 20GB)"
+  type        = number
+  default     = 21474836480
+}
+
+variable "ubuntu_version" {
+  description = "Ubuntu version to use"
+  type        = string
+  default     = "24.04"
+}
+
+variable "vm_user" {
+  description = "Default user for the VM"
+  type        = string
+  default     = "ubuntu"
+}
+
+variable "vm_password" {
+  description = "Default password for the VM user"
+  type        = string
+  default     = "ubuntu"
   sensitive   = true
 }
