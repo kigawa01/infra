@@ -1,0 +1,29 @@
+#cloud-config
+hostname: ${vm_name}
+
+users:
+  - name: ${vm_user}
+    groups: sudo
+    shell: /bin/bash
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    lock_passwd: false
+    passwd: ${vm_password}
+    ssh_authorized_keys:
+      - ${ssh_key}
+
+package_update: true
+package_upgrade: true
+
+packages:
+  - qemu-guest-agent
+  - net-tools
+  - curl
+  - wget
+  - vim
+
+runcmd:
+  - systemctl enable qemu-guest-agent
+  - systemctl start qemu-guest-agent
+  - echo "Cloud-init setup completed" > /var/log/cloud-init-done.log
+
+final_message: "The system is finally up, after $UPTIME seconds"
