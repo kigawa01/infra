@@ -43,6 +43,10 @@ module "host5" {
   source = "./host/host5"
   count  = var.enable_host5 ? 1 : 0
 
+  providers = {
+    libvirt = libvirt.host5
+  }
+
   vm_enabled     = true
   vm_name        = "ubuntu-vm"
   vm_vcpu        = 2

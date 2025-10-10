@@ -36,6 +36,8 @@ provider "kubernetes" {
 }
 
 # Configure the libvirt provider for host5 VM management
+# Only enabled when host5 module is enabled
 provider "libvirt" {
-  uri = var.enable_host5 ? "qemu+ssh://${var.ssh_user}@192.168.1.50/system" : "qemu:///system"
+  alias = "host5"
+  uri   = "qemu+ssh://${var.ssh_user}@192.168.1.50/system"
 }
