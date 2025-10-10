@@ -8,10 +8,7 @@ terraform {
   }
 }
 
-# Connect to libvirt on host5 via SSH
-provider "libvirt" {
-  uri = "qemu+ssh://${var.ssh_user}@192.168.1.50/system"
-}
+# Provider configuration is now handled by the root module
 
 # Ubuntu cloud image
 resource "libvirt_volume" "ubuntu_base" {
