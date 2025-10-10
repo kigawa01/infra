@@ -39,22 +39,20 @@ module "lxc_nginx" {
 }
 
 # host5 (192.168.1.50) host (libvirt VM management)
-module "host5" {
-  source = "./host/host5"
-  count  = var.enable_host5 ? 1 : 0
-
-  providers = {
-    libvirt = libvirt.host5
-  }
-
-  vm_enabled     = true
-  vm_name        = "ubuntu-vm"
-  vm_vcpu        = 2
-  vm_memory      = 2048
-  vm_disk_size   = 21474836480
-  ubuntu_version = "24.04"
-  vm_user        = "ubuntu"
-  vm_password    = "ubuntu"
-  ssh_user       = var.ssh_user
-  ssh_key_path   = var.ssh_key_path
-}
+# DISABLED: Requires libvirt provider setup and SSH key configuration
+# To enable, see terraform/host/host5/README.md
+# module "host5" {
+#   source = "./host/host5"
+#   count  = var.enable_host5 ? 1 : 0
+#
+#   vm_enabled     = true
+#   vm_name        = "ubuntu-vm"
+#   vm_vcpu        = 2
+#   vm_memory      = 2048
+#   vm_disk_size   = 21474836480
+#   ubuntu_version = "24.04"
+#   vm_user        = "ubuntu"
+#   vm_password    = "ubuntu"
+#   ssh_user       = var.ssh_user
+#   ssh_key_path   = var.ssh_key_path
+# }

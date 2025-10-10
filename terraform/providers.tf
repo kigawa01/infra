@@ -13,10 +13,6 @@ terraform {
       source  = "hashicorp/kubernetes"
       version = "~> 2.23"
     }
-    libvirt = {
-      source  = "dmacvicar/libvirt"
-      version = "~> 0.7"
-    }
   }
 
   backend "s3" {
@@ -35,9 +31,5 @@ provider "kubernetes" {
   config_context = var.kubernetes_config_context != "" ? var.kubernetes_config_context : null
 }
 
-# Configure the libvirt provider for host5 VM management
-# Only enabled when host5 module is enabled
-provider "libvirt" {
-  alias = "host5"
-  uri   = "qemu+ssh://${var.ssh_user}@192.168.1.50/system"
-}
+# Note: libvirt provider is configured only when host5 module is enabled
+# See terraform/host/host5/README.md for setup instructions
