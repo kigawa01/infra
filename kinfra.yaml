@@ -1,13 +1,12 @@
 project:
-  name: ""
+  name: "infra"
   description: ""
 terraform:
-  version: ""
-  workingDirectory: "terraform"
+  version: "*"
+  workingDirectory: "."
 bitwarden:
-  projectId: ""
+  projectId: "kigawa-infra"
   useSecretManager: true
 update:
   autoUpdate: true
   checkInterval: 86400000
-  githubRepo: "kigawa-net/kinfra"

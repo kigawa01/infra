@@ -1,6 +1,6 @@
 # Kubernetes module
 module "kubernetes" {
-  source = "./kubernetes"
+  source = "terraform/kubernetes"
 
   # Pass all necessary variables to the kubernetes module
   apply_k8s_manifests      = var.apply_k8s_manifests

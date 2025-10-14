@@ -1,5 +1,5 @@
 # Local .terraform directories
-**/.terraform/*
+.terraform/*
 
 # .tfstate files
 *.tfstate
@@ -85,5 +85,5 @@ build
 .bws_token
 
 # Terraform auto-generated vars
-terraform/hosts.auto.tfvars
+hosts.auto.tfvars
 /logs/*.log
