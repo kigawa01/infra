@@ -1,0 +1,13 @@
+project:
+  name: ""
+  description: ""
+terraform:
+  version: ""
+  workingDirectory: "terraform"
+bitwarden:
+  projectId: ""
+  useSecretManager: true
+update:
+  autoUpdate: true
+  checkInterval: 86400000
+  githubRepo: "kigawa-net/kinfra"
