@@ -211,3 +211,19 @@
 [2025-10-10 23:24:26.704] [ERROR] Terraform plan failed with exit code: 1
 [2025-10-10 23:24:26.705] [INFO] Command deploy-sdk finished with exit code: 1
 [2025-10-10 23:24:26.705] [ERROR] Command deploy-sdk failed with exit code: 1
+[2025-10-10 23:29:44.764] [INFO] Starting Terraform Runner with args: deploy
+[2025-10-10 23:29:44.771] [INFO] Command redirected to SDK version: deploy-sdk
+[2025-10-10 23:29:44.794] [INFO] Auto-selecting 'prod' environment
+[2025-10-10 23:29:44.796] [INFO] Executing command: deploy-sdk with args: prod --auto-selected
+[2025-10-10 23:29:44.796] [INFO] DeployCommandWithSDK started with args: prod --auto-selected
+[2025-10-10 23:29:44.799] [INFO] Environment: prod, Auto-selected: true
+[2025-10-10 23:29:44.800] [INFO] Step 0: Checking R2 backend configuration
+[2025-10-10 23:29:44.800] [INFO] Backend configuration already exists and is valid
+[2025-10-10 23:29:44.800] [INFO] Step 1: Initializing Terraform
+[2025-10-10 23:29:45.431] [INFO] Terraform init completed successfully
+[2025-10-10 23:29:45.431] [INFO] Step 2: Creating execution plan
+[2025-10-10 23:29:46.028] [INFO] Terraform plan completed successfully
+[2025-10-10 23:29:46.029] [INFO] Step 3: Applying changes
+[2025-10-10 23:29:49.471] [ERROR] Terraform apply failed with exit code: 1
+[2025-10-10 23:29:49.471] [INFO] Command deploy-sdk finished with exit code: 1
+[2025-10-10 23:29:49.471] [ERROR] Command deploy-sdk failed with exit code: 1

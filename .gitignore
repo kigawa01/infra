@@ -86,3 +86,4 @@ build
 
 # Terraform auto-generated vars
 terraform/hosts.auto.tfvars
+/logs/*.log

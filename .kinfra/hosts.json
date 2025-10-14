@@ -1,7 +1,0 @@
-{
-  "hosts": {
-    "one_sakura": true,
-    "k8s4": true,
-    "lxc_nginx": true
-  }
-}
