@@ -1,0 +1,74 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: proxy-config
+  namespace: one
+data:
+  nginx.conf: |
+    user  nginx;
+    worker_processes  auto;
+    error_log  /var/log/nginx/error.log notice;
+    pid        /var/run/nginx.pid;
+    events {
+        worker_connections  1024;
+    }
+    stream {
+        proxy_protocol off;
+        error_log /var/log/nginx/stream.log info;
+
+        upstream http {
+            server 192.168.1.56:80;
+        }
+        server {
+            listen 80;
+            proxy_pass http;
+        }
+
+        upstream https {
+            server 192.168.1.56:443;
+        }
+        server {
+            listen 443;
+            proxy_pass https;
+        }
+
+        upstream mc {
+            server 192.168.1.54:25565;
+        }
+        server {
+            listen 25565;
+            proxy_pass mc;
+        }
+
+        upstream dev {
+            server 192.168.1.50:7521;
+        }
+        server {
+            listen 7521;
+            proxy_pass dev;
+        }
+
+        upstream softether {
+            server 192.168.1.55:5555;
+        }
+        server {
+            listen 5555;
+            proxy_pass softether;
+        }
+
+        upstream haproxy {
+            server 192.168.1.104:6443;
+        }
+        server {
+            listen 6443;
+            proxy_pass haproxy;
+        }
+    }
+    http {
+        server {
+            listen 8080;
+            location / {
+                return 200 'ok';
+            }
+        }
+    }
