@@ -1,9 +1,3 @@
-variable "environment" {
-  description = "Environment name"
-  type        = string
-  default     = "prod"
-}
-
 variable "ssh_user" {
   description = "SSH username for remote connection"
   type        = string
