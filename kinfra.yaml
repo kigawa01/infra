@@ -1,9 +1,6 @@
 project:
   name: "infra"
   description: ""
-terraform:
-  version: "*"
-  workingDirectory: "."
 bitwarden:
   projectId: "kigawa-infra"
   useSecretManager: true
