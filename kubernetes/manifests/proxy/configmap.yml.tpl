@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: proxy-config
-  namespace: infra
+  namespace: ${namespace}
 data:
   nginx.conf: |
     user  nginx;

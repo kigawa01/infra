@@ -5,10 +5,22 @@ locals {
   manifest_files_glob = fileset("${path.module}/../../terraform/kubernetes/manifests", "**/*.{yml,yaml}")
 
   # List of all manifest files for local kubectl method
-  all_manifest_file_paths = [
-    for file_path in local.manifest_files_glob :
-    "${path.module}/../../terraform/kubernetes/manifests/${file_path}"
-  ]
+  all_manifest_file_paths = concat(
+    [
+      for file_path in local.manifest_files_glob :
+      "${path.module}/../../terraform/kubernetes/manifests/${file_path}"
+    ],
+    [
+      for each in local_file.proxy_manifests :
+      each.filename
+    ]
+  )
+}
+
+resource "local_file" "proxy_manifests" {
+  for_each = local.proxy_manifests
+  content  = each.value
+  filename = "${path.module}/generated/proxy/${each.key}"
 }
 
 # Apply manifests locally using kubectl (Kubernetes provider mode)

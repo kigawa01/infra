@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: proxy-deploy
-  namespace: infra
+  namespace: ${namespace}
 spec:
   replicas: 1
   selector:
