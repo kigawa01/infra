@@ -1,0 +1,8 @@
+projectName: "kigawa-infra"
+description: "Parent project for managing multiple infrastructure components"
+terraform: null
+subProjects:
+- name: "k8s"
+  path: "kubernetes"
+bitwarden: null
+update: null

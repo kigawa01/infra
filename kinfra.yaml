@@ -1,9 +1,9 @@
 project:
   name: "infra"
-  description: ""
-bitwarden:
-  projectId: "kigawa-infra"
-  useSecretManager: true
-update:
-  autoUpdate: true
-  checkInterval: 86400000
+#bitwarden:
+#  projectId: "kigawa-infra"
+#  useSecretManager: true
+#update:
+#  autoUpdate: true
+#  checkInterval: 86400000
+#
