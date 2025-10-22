@@ -1,5 +1,5 @@
-project:
-  name: "infra"
+rootProject:
+  projectId: "infra"
 #bitwarden:
 #  projectId: "kigawa-infra"
 #  useSecretManager: true
