@@ -2,7 +2,7 @@
 
 # one-sakura host (Nginx installation)
 module "one_sakura" {
-  source = "../host/one-sakura"
+  source = "../old/host/one-sakura"
   count  = var.enable_one_sakura ? 1 : 0
 
   nginx_enabled      = true
@@ -15,7 +15,7 @@ module "one_sakura" {
 
 # k8s4 host (Node Exporter installation)
 module "k8s4" {
-  source = "../host/k8s4"
+  source = "../old/host/k8s4"
   count  = var.enable_k8s4 ? 1 : 0
 
   node_exporter_enabled = true
@@ -29,7 +29,7 @@ module "k8s4" {
 
 # lxc-nginx host (LXC Nginx installation)
 module "lxc_nginx" {
-  source = "../host/lxc-nginx"
+  source = "../old/host/lxc-nginx"
   count  = var.enable_lxc_nginx ? 1 : 0
 
   lxc_nginx_enabled      = true
