@@ -10,5 +10,8 @@ rootProject:
         bitwardenSecretKey: "r2-access"
       - terraformVariable: "secret_key"
         bitwardenSecretKey: "r2-secret"
+      - terraformVariable: "ssh_key"
+        bitwardenSecretKey: "ssh"
+
 bitwarden:
   projectId: "781856ac-53af-47a3-9327-b364013ca585"
