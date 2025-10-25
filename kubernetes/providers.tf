@@ -17,6 +17,4 @@ module "shared" {
 }
 # Configure the Kubernetes provider
 provider "kubernetes" {
-  config_path    = pathexpand(var.kubernetes_config_path)
-  config_context = var.kubernetes_config_context != "" ? var.kubernetes_config_context : null
 }
