@@ -18,6 +18,10 @@ terraform {
   backend "s3" {
     key                         = "kinfra"
     region                      = "auto"
+    bucket                      = var.bucket
+    access_key                  = var.access_key
+    endpoint                    = var.endpoint
+    secret_key                  = var.secret_key
     skip_credentials_validation = true
     skip_region_validation      = true
     skip_requesting_account_id  = true
