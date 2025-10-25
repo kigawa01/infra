@@ -1,9 +1,14 @@
 rootProject:
   projectId: "infra"
-#bitwarden:
-#  projectId: "kigawa-infra"
-#  useSecretManager: true
-#update:
-#  autoUpdate: true
-#  checkInterval: 86400000
-#
+  terraform:
+    variableMappings:
+      - terraformVariable: "bucket"
+        bitwardenSecretKey: "r2-bucket"
+      - terraformVariable: "endpoint"
+        bitwardenSecretKey: "r2-api"
+      - terraformVariable: "access_key"
+        bitwardenSecretKey: "r2-access"
+      - terraformVariable: "secret_key"
+        bitwardenSecretKey: "r2-secret"
+bitwarden:
+  projectId: "781856ac-53af-47a3-9327-b364013ca585"
