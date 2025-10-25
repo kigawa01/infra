@@ -26,12 +26,3 @@ terraform {
     use_path_style              = false
   }
 }
-
-# Configure the Kubernetes provider (used only if use_ssh_kubectl is false)
-provider "kubernetes" {
-  config_path    = pathexpand(var.kubernetes_config_path)
-  config_context = var.kubernetes_config_context != "" ? var.kubernetes_config_context : null
-}
-
-# Note: libvirt provider is configured only when host5 module is enabled
-# See terraform/host/host5/README.md for setup instructions
