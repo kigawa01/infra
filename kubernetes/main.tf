@@ -2,9 +2,9 @@
 
 locals {
   proxy_manifests = {
-    "configmap.yml"  = templatefile("${path.module}/manifests/proxy/configmap.yml.tpl", { namespace = var.proxy_namespace }),
-    "deployment.yml" = templatefile("${path.module}/manifests/proxy/deployment.yml.tpl", { namespace = var.proxy_namespace }),
-    "service.yml"    = templatefile("${path.module}/manifests/proxy/service.yml.tpl", { namespace = var.proxy_namespace }),
+    "configmap.yml"  = templatefile("${path.module}/manifests/proxy/configmap.yml.tpl", { namespace = local.infra_namespace }),
+    "deployment.yml" = templatefile("${path.module}/manifests/proxy/deployment.yml.tpl", { namespace = local.infra_namespace }),
+    "service.yml"    = templatefile("${path.module}/manifests/proxy/service.yml.tpl", { namespace = local.infra_namespace }),
   }
 }
 
