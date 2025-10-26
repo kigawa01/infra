@@ -20,6 +20,3 @@ terraform {
   }
 }
 
-# Configure the Kubernetes provider
-provider "kubernetes" {
-}

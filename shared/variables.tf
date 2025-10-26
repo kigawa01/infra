@@ -1,25 +1,11 @@
-
-
-variable "bucket" {
-  description = "Generated variable: bucket"
+variable "ssh_key" {
+  description = "Generated variable: ssh_key"
   type        = string
   default     = ""
 }
 
-variable "endpoint" {
-  description = "Generated variable: endpoint"
-  type        = string
-  default     = ""
-}
-
-variable "access_key" {
-  description = "Generated variable: access_key"
-  type        = string
-  default     = ""
-}
-
-variable "secret_key" {
-  description = "Generated variable: secret_key"
+variable "ssh_user" {
+  description = "Generated variable: ssh_user"
   type        = string
   default     = ""
 }

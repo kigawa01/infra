@@ -2,16 +2,11 @@ rootProject:
   projectId: "infra"
   terraform:
     variableMappings:
-      - terraformVariable: "bucket"
-        bitwardenSecretKey: "r2-bucket"
-      - terraformVariable: "endpoint"
-        bitwardenSecretKey: "r2-api"
-      - terraformVariable: "access_key"
-        bitwardenSecretKey: "r2-access"
-      - terraformVariable: "secret_key"
-        bitwardenSecretKey: "r2-secret"
       - terraformVariable: "ssh_key"
         bitwardenSecretKey: "ssh"
+      - terraformVariable: "ssh_user"
+        bitwardenSecretKey: "ssh_user"
+    generateOutputDir: "shared"
 
 bitwarden:
   projectId: "781856ac-53af-47a3-9327-b364013ca585"

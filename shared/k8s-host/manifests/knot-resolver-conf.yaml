@@ -1,0 +1,73 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: knot-resolver-conf
+data:
+  # kv format
+  config.yaml: |
+    # SPDX-License-Identifier: CC0-1.0
+    # Refer to manual: https://knot-resolver.readthedocs.org/en/stable/
+    
+    log:
+      level: notice
+      target: syslog
+    
+    net:
+      listen:
+        - address: "0.0.0.0"
+          port: 53
+          kind: dns
+        - address: "0.0.0.0"
+          port: 853
+          kind: tls
+        # - address: "0.0.0.0"
+        #   port: 443
+        #   kind: doh2
+        - address: "::1"
+          port: 53
+          kind: dns
+          freebind: true
+        - address: "::1"
+          port: 853
+          kind: tls
+          freebind: true
+        # - address: "::1"
+        #   port: 443
+        #   kind: doh2
+    
+    modules:
+      - hints > iterate
+      - stats
+      - predict
+    
+    cache:
+      size: 536870912   # 512 MB
+      open:
+        - 8192
+        - "/var/cache/knot-resolver"
+        - false
+    
+    policy:
+      internal_domains:
+        - haproxy.kigawa.net
+        - k8s.kigawa.net
+        - mod.kigawa.net
+        - oyu.kigawa.net
+        - kizuna.kigawa.net
+        - atm10.kigawa.net
+    
+      rules:
+        - type: suffix
+          flags:
+            - NO_CACHE
+          domains_ref: internal_domains
+        - type: suffix
+          stub:
+            - 127.0.0.1:1053
+          domains_ref: internal_domains
+    
+      tls_forward:
+        - address: 1.1.1.1
+          hostname: cloudflare-dns.com
+        - address: 1.0.0.1
+          hostname: cloudflare-dns.com
