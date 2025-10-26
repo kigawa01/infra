@@ -1,6 +1,7 @@
 rootProject:
   projectId: "infra"
   terraform:
+    workingDirectory: "kubernetes"
     variableMappings:
       - terraformVariable: "ssh_key"
         bitwardenSecretKey: "ssh"
