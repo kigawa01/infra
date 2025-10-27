@@ -15,9 +15,7 @@ terraform {
     }
   }
 
-  backend "s3" {
-    region = "auto"
-  }
+
 }
 
 # Configure the Kubernetes provider
