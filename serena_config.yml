@@ -1,0 +1,8 @@
+projects:
+  - path: .
+    language: python
+
+language_servers:
+  - language: python
+    command: ["python3", "-m", "pylsp"]
+

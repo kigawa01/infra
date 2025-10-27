@@ -6,6 +6,15 @@ rootProject:
   terraform:
     version: "1.5.0"
     workingDirectory: "."
+    backendConfig:
+      type: "s3"
+      config:
+        key: "kubernetes.tfstate"
+    variableMappings:
+      - terraformVariable: "apply_k8s_manifests"
+        value: true
+      - terraformVariable: "ssh_key_path"
+        value: "~/.ssh/id_rsa"
 
 # Optional Bitwarden settings
 # bitwarden:

@@ -1,6 +1,15 @@
 projectName: "kigawa-infra"
 description: "Parent project for managing multiple infrastructure components"
-terraform: null
+terraform:
+  backendConfig:
+    type: "s3"
+    config:
+      key: "kinfra.tfstate"
+      bucket: "kinfra"
+      endpoint: "${bws.r2-api}"
+      access_key: "${bws.r2-access}"
+      secret_key: "${bws.r2-secret}"
+      region: "auto"
 subProjects:
 - name: "host1"
 - name: "k8s"

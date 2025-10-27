@@ -16,7 +16,7 @@ terraform {
   }
 
   backend "s3" {
-    region                      = "auto"
+    region = "auto"
   }
 }
 
