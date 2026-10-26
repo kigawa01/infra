@@ -14,5 +14,7 @@ subProjects:
 - name: "host1"
 - name: "k8s"
   path: "kubernetes"
+- name: "host-local"
+  path: "host-local"
 bitwarden: null
 update: null

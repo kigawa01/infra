@@ -1,0 +1,12 @@
+# Terraform state files - may contain sensitive data
+*.tfstate
+*.tfstate.*
+*.tfvars
+
+# Terraform crash logs
+crash.log
+crash.*.log
+
+# CLI history
+*.log
+.terraform/
