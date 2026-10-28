@@ -44,6 +44,14 @@ resource "local_file" "tmux_conf" {
   depends_on = [null_resource.backup_dotfiles]
 }
 
+# Creality Print launcher (3D ビュー描画不良の回避設定込み)
+resource "local_file" "creality_print_desktop" {
+  content = templatefile("${path.module}/dotfiles/creality-print.desktop.tpl", {
+    appimage_path = var.creality_print_appimage
+  })
+  filename = "${var.home_dir}/.local/share/applications/creality-print.desktop"
+}
+
 # .ssh/config
 resource "local_file" "ssh_config" {
   content    = file("${path.module}/dotfiles/ssh_config.tpl")
