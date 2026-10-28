@@ -49,7 +49,8 @@ resource "local_file" "creality_print_desktop" {
   content = templatefile("${path.module}/dotfiles/creality-print.desktop.tpl", {
     appimage_path = var.creality_print_appimage
   })
-  filename = "${var.home_dir}/.local/share/applications/creality-print.desktop"
+  filename        = "${var.home_dir}/.local/share/applications/creality-print.desktop"
+  file_permission = "0755"
 }
 
 # .ssh/config
