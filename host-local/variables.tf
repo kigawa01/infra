@@ -98,3 +98,9 @@ variable "enabled_services" {
     "ssh",
   ]
 }
+
+variable "creality_print_appimage" {
+  description = "Path to the Creality Print AppImage"
+  type        = string
+  default     = "/opt/appimages/creality/CrealityPrint_Ubuntu2404-V6.3.0.3420-x86_64-Release.AppImage"
+}
