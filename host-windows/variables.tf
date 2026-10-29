@@ -4,18 +4,15 @@ variable "winget_packages" {
   default = [
     "Anthropic.Claude",
     "Bitwarden.Bitwarden",
-    "Docker.DockerDesktop",
     "Git.Git",
     "GitHub.cli",
     "Hashicorp.Terraform",
     "JetBrains.Toolbox",
-    "KDE.Krita",
     "Logitech.OptionsPlus",
     "Microsoft.DotNet.SDK.8",
     "Microsoft.Outlook",
     "Microsoft.WSL",
     "Microsoft.WindowsTerminal",
-    "Rye.Rye",
     "Tailscale.Tailscale",
   ]
 }
