@@ -13,6 +13,24 @@ resource "null_resource" "apt_packages" {
   }
 }
 
+# Upgrade installed APT packages (install alone leaves them at their current version)
+resource "null_resource" "apt_upgrade" {
+  depends_on = [null_resource.apt_packages]
+
+  triggers = {
+    package_list = jsonencode(var.apt_upgrade_packages)
+    revision     = var.apt_upgrade_revision
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      export DEBIAN_FRONTEND=noninteractive
+      sudo apt-get update
+      sudo apt-get install -y --only-upgrade ${join(" ", var.apt_upgrade_packages)}
+    EOT
+  }
+}
+
 # Snap packages installation
 resource "null_resource" "snap_packages" {
   triggers = {
