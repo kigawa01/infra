@@ -60,10 +60,16 @@ variable "apt_upgrade_packages" {
   default     = ["tailscale"]
 }
 
+variable "tailscale_apt_base_url" {
+  description = "Base URL of the Tailscale APT repository (per-codename files are fetched from here)"
+  type        = string
+  default     = "https://pkgs.tailscale.com/stable/ubuntu"
+}
+
 variable "apt_upgrade_revision" {
   description = "Increment to re-run the upgrade of apt_upgrade_packages"
   type        = number
-  default     = 1
+  default     = 2
 }
 
 # Snap packages to install
