@@ -13,9 +13,26 @@ resource "null_resource" "apt_packages" {
   }
 }
 
+# Tailscale official APT repository (without it apt has no newer tailscale to upgrade to)
+resource "null_resource" "tailscale_apt_repo" {
+  triggers = {
+    keyring_url = var.tailscale_apt_base_url
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      set -e
+      . /etc/os-release
+      sudo install -d -m 0755 /usr/share/keyrings
+      sudo curl -fsSL ${var.tailscale_apt_base_url}/$${VERSION_CODENAME}.noarmor.gpg -o /usr/share/keyrings/tailscale-archive-keyring.gpg
+      curl -fsSL ${var.tailscale_apt_base_url}/$${VERSION_CODENAME}.tailscale-keyring.list | sudo tee /etc/apt/sources.list.d/tailscale.list > /dev/null
+    EOT
+  }
+}
+
 # Upgrade installed APT packages (install alone leaves them at their current version)
 resource "null_resource" "apt_upgrade" {
-  depends_on = [null_resource.apt_packages]
+  depends_on = [null_resource.apt_packages, null_resource.tailscale_apt_repo]
 
   triggers = {
     package_list = jsonencode(var.apt_upgrade_packages)
