@@ -53,6 +53,19 @@ variable "apt_packages" {
   ]
 }
 
+# APT packages to keep up to date (apt-get install does not upgrade installed packages)
+variable "apt_upgrade_packages" {
+  description = "List of installed APT packages to upgrade to the latest available version"
+  type        = list(string)
+  default     = ["tailscale"]
+}
+
+variable "apt_upgrade_revision" {
+  description = "Increment to re-run the upgrade of apt_upgrade_packages"
+  type        = number
+  default     = 1
+}
+
 # Snap packages to install
 variable "snap_packages" {
   description = "List of snap packages to install"
